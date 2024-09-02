@@ -93,4 +93,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `NO_SALT`, `NO_ENDOWMENT` contstants added
+- `NO_SALT`, `None` contstants added

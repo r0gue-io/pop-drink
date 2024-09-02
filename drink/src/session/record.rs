@@ -7,7 +7,6 @@ use parity_scale_codec::{Decode, Encode};
 
 use crate::{
     errors::MessageResult,
-    minimal::{MinimalSandboxRuntime, RuntimeEvent},
     session::{error::SessionError, BalanceOf},
 };
 
@@ -144,7 +143,11 @@ impl<R: SysConfig> EventBatch<R> {
     }
 }
 
-impl EventBatch<MinimalSandboxRuntime> {
+impl<R> EventBatch<R>
+where
+    R: pallet_contracts::Config,
+    <R as SysConfig>::RuntimeEvent: TryInto<pallet_contracts::Event<R>>,
+{
     /// Returns all the contract events that were emitted during the contract interaction.
     ///
     /// **WARNING**: This method will return all the events that were emitted by ANY contract. If your
@@ -152,18 +155,22 @@ impl EventBatch<MinimalSandboxRuntime> {
     ///
     /// We have to match against static enum variant, and thus (at least for now) we support only
     /// `MinimalSandbox`.
-    pub fn contract_events(&self) -> Vec<&[u8]> {
+    pub fn contract_events(&self) -> Vec<Vec<u8>> {
         self.events
             .iter()
-            .filter_map(|event| match &event.event {
-                RuntimeEvent::Contracts(
-                    pallet_contracts::Event::<MinimalSandboxRuntime>::ContractEmitted {
-                        data, ..
-                    },
-                ) => Some(data.as_slice()),
-                _ => None,
+            .filter_map(|event_record| {
+                if let Ok(pallet_event) = &event_record.event.clone().try_into() {
+                    match pallet_event {
+                        pallet_contracts::Event::<R>::ContractEmitted { data, .. } => {
+                            Some(data.clone())
+                        }
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
             })
-            .collect()
+            .collect::<Vec<Vec<u8>>>()
     }
 
     /// The same as `contract_events`, but decodes the events using the given transcoder.

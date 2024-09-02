@@ -34,7 +34,7 @@ mod flipper {
 mod tests {
     use std::error::Error;
 
-    use drink::session::{Session, NO_ARGS, NO_ENDOWMENT, NO_SALT};
+    use drink::session::{Session, NO_ARGS, NO_SALT};
 
     #[drink::contract_bundle_provider]
     enum BundleProvider {}
@@ -43,8 +43,8 @@ mod tests {
     fn initialization(mut session: Session) -> Result<(), Box<dyn Error>> {
         let contract = BundleProvider::local()?;
         let init_value: bool = session
-            .deploy_bundle_and(contract, "new", &["true"], NO_SALT, NO_ENDOWMENT)?
-            .call_and("get", NO_ARGS, NO_ENDOWMENT)?
+            .deploy_bundle_and(contract, "new", &["true"], NO_SALT, None)?
+            .call_and("get", NO_ARGS, None)?
             .record()
             .last_call_return_decoded()?
             .expect("Call was successful");
@@ -58,11 +58,11 @@ mod tests {
     fn flipping(mut session: Session) -> Result<(), Box<dyn Error>> {
         let contract = BundleProvider::Flipper.bundle()?;
         let init_value: bool = session
-            .deploy_bundle_and(contract, "new", &["true"], NO_SALT, NO_ENDOWMENT)?
-            .call_and("flip", NO_ARGS, NO_ENDOWMENT)?
-            .call_and("flip", NO_ARGS, NO_ENDOWMENT)?
-            .call_and("flip", NO_ARGS, NO_ENDOWMENT)?
-            .call_and("get", NO_ARGS, NO_ENDOWMENT)?
+            .deploy_bundle_and(contract, "new", &["true"], NO_SALT, None)?
+            .call_and("flip", NO_ARGS, None)?
+            .call_and("flip", NO_ARGS, None)?
+            .call_and("flip", NO_ARGS, None)?
+            .call_and("get", NO_ARGS, None)?
             .record()
             .last_call_return_decoded()?
             .expect("Call was successful");

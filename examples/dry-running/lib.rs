@@ -33,7 +33,7 @@ mod tests {
         minimal::{MinimalSandbox, RuntimeCall},
         pallet_balances,
         sandbox_api::prelude::*,
-        session::{Session, NO_ARGS, NO_ENDOWMENT, NO_SALT},
+        session::{Session, NO_ARGS, NO_SALT},
         AccountId32, DispatchError, Sandbox,
     };
 
@@ -45,13 +45,8 @@ mod tests {
         mut session: Session,
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Firstly, let us dry-run contract instantiation with an incorrect constructor argument.
-        let result = session.dry_run_deployment(
-            BundleProvider::local()?,
-            "new",
-            &["10"],
-            NO_SALT,
-            NO_ENDOWMENT,
-        )?;
+        let result =
+            session.dry_run_deployment(BundleProvider::local()?, "new", &["10"], NO_SALT, None)?;
 
         // Ensure that the contract was trapped.
         assert!(matches!(
@@ -62,23 +57,18 @@ mod tests {
         assert!(session.record().event_batches().is_empty());
 
         // Now, let deploy the contract with a correct constructor argument.
-        let address = session.deploy_bundle(
-            BundleProvider::local()?,
-            "new",
-            &["5"],
-            NO_SALT,
-            NO_ENDOWMENT,
-        )?;
+        let address =
+            session.deploy_bundle(BundleProvider::local()?, "new", &["5"], NO_SALT, None)?;
         // Ensure that deployment triggered event emission.
         assert!(!session.record().event_batches().is_empty());
 
         // Now, let us dry-run a contract call.
-        let result = session.dry_run_call(address.clone(), "increment", NO_ARGS, NO_ENDOWMENT)?;
+        let result = session.dry_run_call(address.clone(), "increment", NO_ARGS, None)?;
         // We can check the estimated gas consumption.
         let gas_estimation = result.gas_consumed;
 
         // In the end, we can execute the call and verify gas consumption.
-        session.call_with_address::<_, ()>(address, "increment", NO_ARGS, NO_ENDOWMENT)??;
+        session.call_with_address::<_, ()>(address, "increment", NO_ARGS, None)??;
         let gas_consumption = session.record().last_call_result().gas_consumed;
 
         assert_eq!(gas_estimation, gas_consumption);

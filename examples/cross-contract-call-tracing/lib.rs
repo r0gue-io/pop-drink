@@ -65,7 +65,7 @@ mod tests {
 
     use drink::{
         pallet_contracts_debugging::{TracingExt, TracingExtT},
-        session::{contract_transcode::Value, Session, NO_ARGS, NO_ENDOWMENT},
+        session::{contract_transcode::Value, Session, NO_ARGS},
         AccountId32,
     };
     use ink::storage::traits::Storable;
@@ -135,7 +135,7 @@ mod tests {
             "new",
             NO_ARGS,
             vec![1],
-            NO_ENDOWMENT,
+            None,
         )?;
         OUTER_ADDRESS.with(|a| *a.borrow_mut() = Some(outer_address.clone()));
         let middle_address = session.deploy_bundle(
@@ -143,7 +143,7 @@ mod tests {
             "new",
             NO_ARGS,
             vec![2],
-            NO_ENDOWMENT,
+            None,
         )?;
         MIDDLE_ADDRESS.with(|a| *a.borrow_mut() = Some(middle_address.clone()));
         let inner_address = session.deploy_bundle(
@@ -151,7 +151,7 @@ mod tests {
             "new",
             NO_ARGS,
             vec![3],
-            NO_ENDOWMENT,
+            None,
         )?;
         INNER_ADDRESS.with(|a| *a.borrow_mut() = Some(inner_address.clone()));
 
@@ -163,7 +163,7 @@ mod tests {
                 &*inner_address.to_string(),
                 "7",
             ],
-            NO_ENDOWMENT,
+            None,
         )??;
 
         assert_eq!(value, 22);

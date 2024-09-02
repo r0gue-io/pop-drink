@@ -17,7 +17,6 @@ use parity_scale_codec::Decode;
 pub use record::{EventBatch, Record};
 
 use crate::{
-    minimal::MinimalSandboxRuntime,
     pallet_contracts::{Config, Determinism},
     pallet_contracts_debugging::{InterceptingExt, TracingExt},
     session::mock::MockRegistry,
@@ -50,10 +49,6 @@ type HashFor<R> = <R as frame_system::Config>::Hash;
 pub const NO_ARGS: &[String] = &[];
 /// Convenient value for an empty salt.
 pub const NO_SALT: Vec<u8> = vec![];
-/// Convenient value for no endowment.
-///
-/// Compatible with any runtime with `u128` as the balance type.
-pub const NO_ENDOWMENT: Option<BalanceOf<MinimalSandboxRuntime>> = None;
 
 /// Wrapper around `Sandbox` that provides a convenient API for interacting with multiple contracts.
 ///
@@ -67,7 +62,7 @@ pub const NO_ENDOWMENT: Option<BalanceOf<MinimalSandboxRuntime>> = None;
 /// # use ink_sandbox::AccountId32;
 /// # use drink::{
 /// #   session::Session,
-/// #   session::{NO_ARGS, NO_SALT, NO_ENDOWMENT},
+/// #   session::{NO_ARGS, NO_SALT, None},
 /// #   minimal::MinimalSandbox
 /// # };
 /// #
@@ -80,10 +75,10 @@ pub const NO_ENDOWMENT: Option<BalanceOf<MinimalSandboxRuntime>> = None;
 /// # fn main() -> Result<(), drink::session::error::SessionError> {
 ///
 /// Session::<MinimalSandbox>::default()
-///     .deploy_and(contract_bytes(), "new", NO_ARGS, NO_SALT, NO_ENDOWMENT, &get_transcoder())?
-///     .call_and("foo", NO_ARGS, NO_ENDOWMENT)?
+///     .deploy_and(contract_bytes(), "new", NO_ARGS, NO_SALT, None, &get_transcoder())?
+///     .call_and("foo", NO_ARGS, None)?
 ///     .with_actor(bob())
-///     .call_and("bar", NO_ARGS, NO_ENDOWMENT)?;
+///     .call_and("bar", NO_ARGS, None)?;
 /// # Ok(()) }
 /// ```
 ///
@@ -95,7 +90,7 @@ pub const NO_ENDOWMENT: Option<BalanceOf<MinimalSandboxRuntime>> = None;
 /// # use drink::{
 /// #   session::Session,
 /// #   minimal::MinimalSandbox,
-/// #   session::{NO_ARGS, NO_ENDOWMENT, NO_SALT}
+/// #   session::{NO_ARGS, None, NO_SALT}
 /// # };
 /// # fn get_transcoder() -> Arc<ContractMessageTranscoder> {
 /// #   Arc::new(ContractMessageTranscoder::load("").unwrap())
@@ -106,10 +101,10 @@ pub const NO_ENDOWMENT: Option<BalanceOf<MinimalSandboxRuntime>> = None;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
 /// let mut session = Session::<MinimalSandbox>::default();
-/// let _address = session.deploy(contract_bytes(), "new", NO_ARGS, NO_SALT, NO_ENDOWMENT, &get_transcoder())?;
-/// let _result: u32 = session.call("foo", NO_ARGS, NO_ENDOWMENT)??;
+/// let _address = session.deploy(contract_bytes(), "new", NO_ARGS, NO_SALT, None, &get_transcoder())?;
+/// let _result: u32 = session.call("foo", NO_ARGS, None)??;
 /// session.set_actor(bob());
-/// session.call::<_, ()>("bar", NO_ARGS, NO_ENDOWMENT)??;
+/// session.call::<_, ()>("bar", NO_ARGS, None)??;
 /// # Ok(()) }
 /// ```
 ///
@@ -118,19 +113,19 @@ pub const NO_ENDOWMENT: Option<BalanceOf<MinimalSandboxRuntime>> = None;
 /// # use drink::{
 /// #   local_contract_file,
 /// #   session::Session,
-/// #   session::{ContractBundle, NO_ARGS, NO_SALT, NO_ENDOWMENT},
+/// #   session::{ContractBundle, NO_ARGS, NO_SALT, None},
 /// #   minimal::MinimalSandbox
 /// # };
 ///
 /// # fn main() -> Result<(), drink::session::error::SessionError> {
 /// // Simplest way, loading a bundle from the project's directory:
 /// Session::<MinimalSandbox>::default()
-///     .deploy_bundle_and(local_contract_file!(), "new", NO_ARGS, NO_SALT, NO_ENDOWMENT)?; /* ... */
+///     .deploy_bundle_and(local_contract_file!(), "new", NO_ARGS, NO_SALT, None)?; /* ... */
 ///
 /// // Or choosing the file explicitly:
 /// let contract = ContractBundle::load("path/to/your.contract")?;
 /// Session::<MinimalSandbox>::default()
-///     .deploy_bundle_and(contract, "new", NO_ARGS, NO_SALT, NO_ENDOWMENT)?; /* ... */
+///     .deploy_bundle_and(contract, "new", NO_ARGS, NO_SALT, None)?; /* ... */
 ///  # Ok(()) }
 /// ```
 pub struct Session<T: Sandbox>

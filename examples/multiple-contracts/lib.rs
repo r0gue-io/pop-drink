@@ -41,7 +41,7 @@ mod balance_checker {
 mod tests {
     use std::error::Error;
 
-    use drink::session::{Session, NO_ARGS, NO_ENDOWMENT, NO_SALT};
+    use drink::session::{Session, NO_ARGS, NO_SALT};
 
     #[drink::contract_bundle_provider]
     enum BundleProvider {}
@@ -53,7 +53,7 @@ mod tests {
             "new",
             &["10", "None", "None", "1"],
             NO_SALT,
-            NO_ENDOWMENT,
+            None,
         )?;
 
         let user_account = session.get_actor();
@@ -62,10 +62,10 @@ mod tests {
             "new",
             &[user_account.to_string(), token_contract.to_string()],
             NO_SALT,
-            NO_ENDOWMENT,
+            None,
         )?;
 
-        let balance: u128 = session.call("check", NO_ARGS, NO_ENDOWMENT)??;
+        let balance: u128 = session.call("check", NO_ARGS, None)??;
         assert_eq!(balance, 10);
 
         Ok(())

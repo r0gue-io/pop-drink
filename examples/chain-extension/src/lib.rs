@@ -37,7 +37,7 @@ mod contract_calling_chain_extension {
 mod tests {
     use drink::{
         create_sandbox,
-        session::{Session, NO_ARGS, NO_ENDOWMENT, NO_SALT},
+        session::{Session, NO_ARGS, NO_SALT},
     };
 
     use crate::CHAIN_EXTENSION_RETURN_VALUE;
@@ -56,14 +56,8 @@ mod tests {
     #[drink::test(sandbox = SandboxWithCE)]
     fn we_can_test_chain_extension(mut session: Session) -> Result<(), Box<dyn std::error::Error>> {
         let result: u32 = session
-            .deploy_bundle_and(
-                BundleProvider::local()?,
-                "new",
-                NO_ARGS,
-                NO_SALT,
-                NO_ENDOWMENT,
-            )?
-            .call("call_ce", NO_ARGS, NO_ENDOWMENT)??;
+            .deploy_bundle_and(BundleProvider::local()?, "new", NO_ARGS, NO_SALT, None)?
+            .call("call_ce", NO_ARGS, None)??;
 
         assert_eq!(result, CHAIN_EXTENSION_RETURN_VALUE);
 
