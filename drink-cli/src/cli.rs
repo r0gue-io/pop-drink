@@ -1,5 +1,6 @@
 use clap::Parser;
-use drink::{AccountId32, Ss58Codec};
+use drink::AccountId32;
+use std::str::FromStr;
 
 #[derive(Parser)]
 pub enum CliCommand {
@@ -16,12 +17,14 @@ pub enum CliCommand {
         count: u32,
     },
     AddTokens {
-        #[clap(value_parser = AccountId32::from_ss58check)]
+        // TODO: from_ss58_checked
+        #[clap(value_parser = AccountId32::from_str)]
         recipient: AccountId32,
         value: u128,
     },
     SetActor {
-        #[clap(value_parser = AccountId32::from_ss58check)]
+        // TODO: from_ss58_checked
+        #[clap(value_parser = AccountId32::from_str)]
         actor: AccountId32,
     },
     SetGasLimit {

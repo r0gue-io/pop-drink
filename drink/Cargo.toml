@@ -12,15 +12,10 @@ description = "Minimal sufficient architecture that allows for a fully functiona
 [dependencies]
 contract-metadata = { workspace = true, optional = true }
 contract-transcode = { workspace = true, optional = true }
-frame-metadata = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
-pallet-contracts = { workspace = true }
-pallet-balances = { workspace = true }
-pallet-timestamp = { workspace = true }
 parity-scale-codec = { workspace = true }
 parity-scale-codec-derive = { workspace = true }
-sp-externalities = { workspace = true }
 sp-runtime-interface = { workspace = true }
 ink_sandbox = { workspace = true }
 
@@ -40,12 +35,4 @@ default = [
 ]
 session = ["contract-metadata", "contract-transcode", "serde_json"]
 macros = ["contract-metadata", "contract-transcode", "serde_json"]
-std = [
-    "frame-support/std",
-    "frame-system/std",
-    "frame-metadata/std",
-    "pallet-contracts/std",
-    "pallet-balances/std",
-    "pallet-timestamp/std",
-    "sp-externalities/std",
-]
+std = []

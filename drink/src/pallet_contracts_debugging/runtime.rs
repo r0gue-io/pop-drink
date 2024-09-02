@@ -1,7 +1,6 @@
+use ink_sandbox::sp_externalities::{decl_extension, ExternalitiesExt};
 use parity_scale_codec::Encode;
 use sp_runtime_interface::runtime_interface;
-
-use crate::sp_externalities::{decl_extension, ExternalitiesExt};
 
 /// Contracts pallet outsources debug callbacks through this runtime interface.
 ///

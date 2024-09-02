@@ -3,7 +3,7 @@ resolver = "2"
 
 members = ["drink", "drink/test-macro", "drink-cli"]
 
-exclude = ["examples/"]
+exclude = ["examples/", "ink-sandbox/"]
 
 [workspace.package]
 authors = ["Cardinal"]
@@ -35,21 +35,16 @@ serde_json = { version = "1.0" }
 syn = { version = "2" }
 thiserror = { version = "1.0.40" }
 wat = { version = "1.0.71" }
-ink_sandbox = { version = "5.0.0" }
 
 # Substrate dependencies
 
-frame-metadata = { version = "16.0.0" }
 frame-support = { version = "30.0.0" }
 frame-system = { version = "30.0.0" }
-pallet-contracts = { version = "29.0.0", default-features = false }
-pallet-balances = { version = "30.0.0", default-features = false }
-pallet-timestamp = { version = "29.0.0", default-features = false }
-sp-externalities = { version = "0.28.0", default-features = false }
-sp-runtime-interface = { version = "26.0.0" }
+sp-runtime-interface = { version = "25.0.0" }
 
 
 # Local dependencies
 
+ink_sandbox = { version = "=5.0.0", path = "ink-sandbox" }
 drink = { version = "=0.17.0", path = "drink" }
 drink-test-macro = { version = "=0.17.0", path = "drink/test-macro" }
