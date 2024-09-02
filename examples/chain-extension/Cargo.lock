@@ -1308,13 +1308,18 @@ dependencies = [
  "contract-metadata",
  "contract-transcode",
  "drink-test-macro",
+ "frame-metadata",
  "frame-support",
  "frame-system",
  "ink_sandbox",
+ "pallet-balances",
+ "pallet-contracts",
+ "pallet-timestamp",
  "parity-scale-codec",
  "parity-scale-codec-derive",
  "scale-info",
  "serde_json",
+ "sp-externalities 0.28.0",
  "sp-runtime-interface",
  "thiserror",
  "wat",
@@ -1572,7 +1577,7 @@ dependencies = [
  "sp-runtime",
  "sp-runtime-interface",
  "sp-std",
- "sp-storage",
+ "sp-storage 20.0.0",
  "static_assertions",
 ]
 
@@ -2386,7 +2391,7 @@ dependencies = [
  "paste",
  "scale-info",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.27.0",
  "sp-io",
  "wat",
 ]
@@ -3074,7 +3079,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
- "sp-storage",
+ "sp-storage 20.0.0",
  "sp-timestamp",
 ]
 
@@ -4111,7 +4116,7 @@ dependencies = [
  "scale-info",
  "sp-api-proc-macro",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.27.0",
  "sp-metadata-ir",
  "sp-runtime",
  "sp-runtime-interface",
@@ -4200,10 +4205,10 @@ dependencies = [
  "serde",
  "sp-crypto-hashing",
  "sp-debug-derive",
- "sp-externalities",
+ "sp-externalities 0.27.0",
  "sp-runtime-interface",
  "sp-std",
- "sp-storage",
+ "sp-storage 20.0.0",
  "ss58-registry",
  "substrate-bip39",
  "thiserror",
@@ -4257,7 +4262,18 @@ dependencies = [
  "environmental",
  "parity-scale-codec",
  "sp-std",
- "sp-storage",
+ "sp-storage 20.0.0",
+]
+
+[[package]]
+name = "sp-externalities"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33abaec4be69b1613796bbf430decbbcaaf978756379e2016e683a4d6379cd02"
+dependencies = [
+ "environmental",
+ "parity-scale-codec",
+ "sp-storage 21.0.0",
 ]
 
 [[package]]
@@ -4302,7 +4318,7 @@ dependencies = [
  "secp256k1",
  "sp-core",
  "sp-crypto-hashing",
- "sp-externalities",
+ "sp-externalities 0.27.0",
  "sp-keystore",
  "sp-runtime-interface",
  "sp-state-machine",
@@ -4322,7 +4338,7 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.27.0",
 ]
 
 [[package]]
@@ -4384,10 +4400,10 @@ dependencies = [
  "parity-scale-codec",
  "polkavm-derive 0.8.0",
  "primitive-types",
- "sp-externalities",
+ "sp-externalities 0.27.0",
  "sp-runtime-interface-proc-macro",
  "sp-std",
- "sp-storage",
+ "sp-storage 20.0.0",
  "sp-tracing",
  "sp-wasm-interface",
  "static_assertions",
@@ -4435,7 +4451,7 @@ dependencies = [
  "rand",
  "smallvec",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.27.0",
  "sp-panic-handler",
  "sp-std",
  "sp-trie",
@@ -4462,6 +4478,19 @@ dependencies = [
  "serde",
  "sp-debug-derive",
  "sp-std",
+]
+
+[[package]]
+name = "sp-storage"
+version = "21.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "99c82989b3a4979a7e1ad848aad9f5d0b4388f1f454cc131766526601ab9e8f8"
+dependencies = [
+ "impl-serde",
+ "parity-scale-codec",
+ "ref-cast",
+ "serde",
+ "sp-debug-derive",
 ]
 
 [[package]]
@@ -4508,7 +4537,7 @@ dependencies = [
  "scale-info",
  "schnellru",
  "sp-core",
- "sp-externalities",
+ "sp-externalities 0.27.0",
  "sp-std",
  "thiserror",
  "tracing",

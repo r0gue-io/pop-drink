@@ -5,6 +5,8 @@
 
 pub mod errors;
 pub mod pallet_contracts_debugging;
+/// Necessary exports in ink_e2e_sandbox
+pub mod sandbox;
 #[cfg(feature = "session")]
 pub mod session;
 

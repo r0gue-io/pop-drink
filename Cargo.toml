@@ -1,15 +1,9 @@
 [workspace]
 resolver = "2"
 
-members = [
-    "drink",
-    "drink/test-macro",
-    "drink-cli",
-]
+members = ["drink", "drink/test-macro", "drink-cli"]
 
-exclude = [
-    "examples/",
-]
+exclude = ["examples/"]
 
 [workspace.package]
 authors = ["Cardinal"]
@@ -45,9 +39,15 @@ ink_sandbox = { version = "5.0.0" }
 
 # Substrate dependencies
 
-frame-support = { version = "30.0.0"}
+frame-metadata = { version = "16.0.0" }
+frame-support = { version = "30.0.0" }
 frame-system = { version = "30.0.0" }
+pallet-contracts = { version = "29.0.0", default-features = false }
+pallet-balances = { version = "30.0.0", default-features = false }
+pallet-timestamp = { version = "29.0.0", default-features = false }
+sp-externalities = { version = "0.28.0", default-features = false }
 sp-runtime-interface = { version = "26.0.0" }
+
 
 # Local dependencies
 
