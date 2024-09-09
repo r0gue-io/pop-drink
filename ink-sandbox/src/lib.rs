@@ -19,6 +19,7 @@ pub use {
     sp_core::crypto::Ss58Codec,
     sp_externalities::{self, Extension},
     sp_io::TestExternalities,
+    sp_runtime_interface::{self},
 };
 
 /// Alias for the balance type.

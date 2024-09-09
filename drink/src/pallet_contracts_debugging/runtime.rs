@@ -48,7 +48,7 @@ pub trait TracingExtT {
 
 decl_extension! {
     /// A wrapper type for the `TracingExtT` debug extension.
-    pub struct TracingExt(Box<dyn TracingExtT + Send>);
+    pub struct TracingExt(Box<dyn TracingExtT + 'static + Sync + Send>);
 }
 
 /// This trait describes a runtime extension that can be used to intercept contract calls.
