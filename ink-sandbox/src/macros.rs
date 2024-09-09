@@ -207,7 +207,6 @@ mod construct_runtime {
         type RuntimeHoldReason = RuntimeHoldReason;
         type Environment = ();
         type Xcm = ();
-        type ApiVersion = ();
     }
 
     // Implement `crate::Sandbox` trait

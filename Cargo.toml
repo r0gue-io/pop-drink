@@ -38,9 +38,9 @@ wat = { version = "1.0.71" }
 
 # Substrate dependencies
 
-frame-support = { version = "30.0.0" }
-frame-system = { version = "30.0.0" }
-sp-runtime-interface = { version = "26.0.0" }
+frame-support = { version = "29.0.2" }
+frame-system = { version = "29.0.0" }
+sp-runtime-interface = { version = "25.0.0" }
 
 
 # Local dependencies

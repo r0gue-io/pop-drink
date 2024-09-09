@@ -14,7 +14,7 @@ pub use drink_test_macro::{contract_bundle_provider, test};
 pub use errors::Error;
 pub use frame_support;
 pub use ink_sandbox::{
-    api as sandbox_api, create_sandbox, pallet_balances, pallet_contracts, pallet_timestamp,
+    self, api as sandbox_api, create_sandbox, pallet_balances, pallet_contracts, pallet_timestamp,
     sp_externalities, AccountId32, DispatchError, Sandbox, Ss58Codec, Weight,
 };
 #[cfg(feature = "session")]
