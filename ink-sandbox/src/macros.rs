@@ -63,25 +63,104 @@ impl<
     }
 }
 
+#[macro_export]
+macro_rules! create_sandbox {
+    ($sandbox:ident, $runtime:ident) => {
+        use $crate::frame_support::sp_runtime::AccountId32;
+
+        // Implement `crate::Sandbox` trait
+
+        /// Default initial balance for the default account.
+        pub const INITIAL_BALANCE: u128 = 1_000_000_000_000_000;
+        pub const DEFAULT_ACCOUNT: AccountId32 = AccountId32::new([1u8; 32]);
+
+        pub struct $sandbox {
+            ext: $crate::TestExternalities,
+        }
+
+        impl ::std::default::Default for $sandbox {
+            fn default() -> Self {
+                let ext = $crate::macros::BlockBuilder::<$runtime>::new_ext(vec![(
+                    DEFAULT_ACCOUNT,
+                    INITIAL_BALANCE,
+                )]);
+                Self { ext }
+            }
+        }
+
+        impl $crate::Sandbox for $sandbox {
+            type Runtime = $runtime;
+
+            fn execute_with<T>(&mut self, execute: impl FnOnce() -> T) -> T {
+                self.ext.execute_with(execute)
+            }
+
+            fn dry_run<T>(&mut self, action: impl FnOnce(&mut Self) -> T) -> T {
+                // Make a backup of the backend.
+                let backend_backup = self.ext.as_backend();
+                // Run the action, potentially modifying storage. Ensure, that there are no pending changes
+                // that would affect the reverted backend.
+                let result = action(self);
+                self.ext.commit_all().expect("Failed to commit changes");
+
+                // Restore the backend.
+                self.ext.backend = backend_backup;
+                result
+            }
+
+            fn register_extension<E: ::core::any::Any + $crate::Extension>(&mut self, ext: E) {
+                self.ext.register_extension(ext);
+            }
+
+            fn initialize_block(
+                height: $crate::frame_system::pallet_prelude::BlockNumberFor<Self::Runtime>,
+                parent_hash: <Self::Runtime as $crate::frame_system::Config>::Hash,
+            ) {
+                $crate::macros::BlockBuilder::<Self::Runtime>::initialize_block(height, parent_hash)
+            }
+
+            fn finalize_block(
+                height: $crate::frame_system::pallet_prelude::BlockNumberFor<Self::Runtime>,
+            ) -> <Self::Runtime as $crate::frame_system::Config>::Hash {
+                $crate::macros::BlockBuilder::<Self::Runtime>::finalize_block(height)
+            }
+
+            fn default_actor() -> $crate::AccountIdFor<Self::Runtime> {
+                DEFAULT_ACCOUNT
+            }
+
+            fn get_metadata() -> $crate::RuntimeMetadataPrefixed {
+                Self::Runtime::metadata()
+            }
+
+            fn convert_account_to_origin(
+                account: $crate::AccountIdFor<Self::Runtime>,
+            ) -> <<Self::Runtime as $crate::frame_system::Config>::RuntimeCall as $crate::frame_support::sp_runtime::traits::Dispatchable>::RuntimeOrigin {
+                Some(account).into()
+            }
+        }
+    };
+}
+
 /// Macro creating a minimal runtime with the given name. Optionally can take a chain
 /// extension type as a second argument.
 ///
 /// The new macro will automatically implement `crate::Sandbox`.
 #[macro_export]
-macro_rules! create_sandbox {
+macro_rules! create_sandbox_with_runtime {
     ($name:ident) => {
         $crate::paste::paste! {
-            $crate::create_sandbox!($name, [<$name Runtime>], (), (), {});
+            $crate::create_sandbox_with_runtime!($name, [<$name Runtime>], (), (), {});
         }
     };
     ($name:ident, $chain_extension: ty, $debug: ty) => {
         $crate::paste::paste! {
-            $crate::create_sandbox!($name, [<$name Runtime>], $chain_extension, $debug, {});
+            $crate::create_sandbox_with_runtime!($name, [<$name Runtime>], $chain_extension, $debug, {});
         }
     };
     ($name:ident, $chain_extension: ty, $debug: ty, { $( $pallet_name:tt : $pallet:ident ),* $(,)? }) => {
         $crate::paste::paste! {
-            $crate::create_sandbox!($name, [<$name Runtime>], $chain_extension, $debug, {
+            $crate::create_sandbox_with_runtime!($name, [<$name Runtime>], $chain_extension, $debug, {
                 $(
                     $pallet_name : $pallet,
                 )*
@@ -102,7 +181,7 @@ mod construct_runtime {
         sp_runtime::{
             testing::H256,
             traits::Convert,
-            AccountId32, Perbill,
+            Perbill,
         },
         traits::{ConstBool, ConstU128, ConstU32, ConstU64, Currency, Randomness},
         weights::Weight,
@@ -209,77 +288,7 @@ mod construct_runtime {
         type Xcm = ();
     }
 
-    // Implement `crate::Sandbox` trait
-
-    /// Default initial balance for the default account.
-    pub const INITIAL_BALANCE: u128 = 1_000_000_000_000_000;
-    pub const DEFAULT_ACCOUNT: AccountId32 = AccountId32::new([1u8; 32]);
-
-    pub struct $sandbox {
-        ext: $crate::TestExternalities,
-    }
-
-    impl ::std::default::Default for $sandbox {
-        fn default() -> Self {
-            let ext = $crate::macros::BlockBuilder::<$runtime>::new_ext(vec![(
-                DEFAULT_ACCOUNT,
-                INITIAL_BALANCE,
-            )]);
-            Self { ext }
-        }
-    }
-
-    impl $crate::Sandbox for $sandbox {
-        type Runtime = $runtime;
-
-        fn execute_with<T>(&mut self, execute: impl FnOnce() -> T) -> T {
-            self.ext.execute_with(execute)
-        }
-
-        fn dry_run<T>(&mut self, action: impl FnOnce(&mut Self) -> T) -> T {
-            // Make a backup of the backend.
-            let backend_backup = self.ext.as_backend();
-            // Run the action, potentially modifying storage. Ensure, that there are no pending changes
-            // that would affect the reverted backend.
-            let result = action(self);
-            self.ext.commit_all().expect("Failed to commit changes");
-
-            // Restore the backend.
-            self.ext.backend = backend_backup;
-            result
-        }
-
-        fn register_extension<E: ::core::any::Any + $crate::Extension>(&mut self, ext: E) {
-            self.ext.register_extension(ext);
-        }
-
-        fn initialize_block(
-            height: $crate::frame_system::pallet_prelude::BlockNumberFor<Self::Runtime>,
-            parent_hash: <Self::Runtime as $crate::frame_system::Config>::Hash,
-        ) {
-            $crate::macros::BlockBuilder::<Self::Runtime>::initialize_block(height, parent_hash)
-        }
-
-        fn finalize_block(
-            height: $crate::frame_system::pallet_prelude::BlockNumberFor<Self::Runtime>,
-        ) -> <Self::Runtime as $crate::frame_system::Config>::Hash {
-            $crate::macros::BlockBuilder::<Self::Runtime>::finalize_block(height)
-        }
-
-        fn default_actor() -> $crate::AccountIdFor<Self::Runtime> {
-            DEFAULT_ACCOUNT
-        }
-
-        fn get_metadata() -> $crate::RuntimeMetadataPrefixed {
-            Self::Runtime::metadata()
-        }
-
-        fn convert_account_to_origin(
-            account: $crate::AccountIdFor<Self::Runtime>,
-        ) -> <<Self::Runtime as $crate::frame_system::Config>::RuntimeCall as $crate::frame_support::sp_runtime::traits::Dispatchable>::RuntimeOrigin {
-            Some(account).into()
-        }
-    }
+    $crate::create_sandbox!($sandbox, $runtime);
 }
 
 // Export runtime type itself, pallets and useful types from the auxiliary module
@@ -290,4 +299,4 @@ pub use construct_runtime::{
     };
 }
 
-create_sandbox!(DefaultSandbox);
+create_sandbox_with_runtime!(DefaultSandbox);

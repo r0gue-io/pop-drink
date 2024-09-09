@@ -7,7 +7,7 @@ The thing that `drink` makes easier for you is combining an arbitrary chain exte
 By simply calling:
 
 ```rust
-create_sandbox!(
+create_sandbox_with_runtime!(
     SandboxWithCustomChainExtension,
     path::to::MyCustomChainExtension
 );

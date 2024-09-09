@@ -9,7 +9,7 @@ use frame_support::{sp_runtime::traits::Dispatchable, traits::fungible::Inspect}
 use frame_system::{pallet_prelude::BlockNumberFor, EventRecord};
 pub use macros::{BlockBuilder, DefaultSandbox};
 use pallet_contracts::{ContractExecResult, ContractInstantiateResult};
-/// Export pallets that are used in [`crate::create_sandbox`]
+/// Export pallets that are used in [`crate::create_sandbox_with_runtime`]
 pub use {
     frame_support::{
         self,

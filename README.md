@@ -9,7 +9,7 @@
 >
 > 1. `drink` and `ink_sandbox` must share same version for Substrate dependencies. Current version: `1.7.0` (Can be upgraded using `psvm`).
 > 2. Quasi tests must be run with `cargo test --release`.
-> 3. Custom runtime provided to `create_sandbox!` must have crates `frame-system`, `frame-support` and `parity-scale-codec` with as same versions as the `drink` crate.
+> 3. Custom runtime provided to `create_sandbox_with_runtime!` must have crates `frame-system`, `frame-support` and `parity-scale-codec` with as same versions as the `drink` crate.
 
 # What is DRink!?
 
