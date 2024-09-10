@@ -150,38 +150,43 @@ macro_rules! create_sandbox {
 macro_rules! create_sandbox_with_runtime {
     ($name:ident) => {
         $crate::paste::paste! {
-            $crate::create_sandbox_with_runtime!($name, [<$name Runtime>], (), (), {});
+            $crate::create_sandbox_with_runtime!($crate, $name, [<$name Runtime>], (), (), {});
         }
     };
     ($name:ident, $chain_extension: ty, $debug: ty) => {
         $crate::paste::paste! {
-            $crate::create_sandbox_with_runtime!($name, [<$name Runtime>], $chain_extension, $debug, {});
+            $crate::create_sandbox_with_runtime!($crate, $name, [<$name Runtime>], $chain_extension, $debug, {});
         }
     };
     ($name:ident, $chain_extension: ty, $debug: ty, { $( $pallet_name:tt : $pallet:ident ),* $(,)? }) => {
         $crate::paste::paste! {
-            $crate::create_sandbox_with_runtime!($name, [<$name Runtime>], $chain_extension, $debug, {
+            $crate::create_sandbox_with_runtime!($crate, $name, [<$name Runtime>], $chain_extension, $debug, {
                 $(
                     $pallet_name : $pallet,
                 )*
             });
         }
     };
-    ($sandbox:ident, $runtime:ident, $chain_extension: ty, $debug: ty, { $( $pallet_name:tt : $pallet:ident ),* $(,)? }) => {
+    ($module_path:ident, $name:ident, $chain_extension: ty, $debug: ty) => {
+        $crate::paste::paste! {
+            $crate::create_sandbox_with_runtime!($module_path, $name, [<$name Runtime>], $chain_extension, $debug, {});
+        }
+    };
+    ($module_path:ident, $sandbox:ident, $runtime:ident, $chain_extension: ty, $debug: ty, { $( $pallet_name:tt : $pallet:ident ),* $(,)? }) => {
 
 
 // Put all the boilerplate into an auxiliary module
 mod construct_runtime {
 
     // Bring some common types into the scope
-    use $crate::frame_support::{
+    use $module_path::frame_support::{
         construct_runtime,
         derive_impl,
         parameter_types,
         sp_runtime::{
             testing::H256,
             traits::Convert,
-            Perbill,
+             Perbill,
         },
         traits::{ConstBool, ConstU128, ConstU32, ConstU64, Currency, Randomness},
         weights::Weight,
@@ -190,10 +195,10 @@ mod construct_runtime {
     // Define the runtime type as a collection of pallets
     construct_runtime!(
         pub enum $runtime {
-            System: $crate::frame_system,
-            Balances: $crate::pallet_balances,
-            Timestamp: $crate::pallet_timestamp,
-            Contracts: $crate::pallet_contracts,
+            System: $module_path::frame_system,
+            Balances: $module_path::pallet_balances,
+            Timestamp: $module_path::pallet_timestamp,
+            Contracts: $module_path::pallet_contracts,
             $(
                 $pallet_name: $pallet,
             )*
@@ -201,16 +206,16 @@ mod construct_runtime {
     );
 
     // Configure pallet system
-    #[derive_impl($crate::frame_system::config_preludes::SolochainDefaultConfig as $crate::frame_system::DefaultConfig)]
-    impl $crate::frame_system::Config for $runtime {
-        type Block = $crate::frame_system::mocking::MockBlockU32<$runtime>;
+    #[derive_impl($module_path::frame_system::config_preludes::SolochainDefaultConfig as $module_path::frame_system::DefaultConfig)]
+    impl $module_path::frame_system::Config for $runtime {
+        type Block = $module_path::frame_system::mocking::MockBlockU32<$runtime>;
         type Version = ();
         type BlockHashCount = ConstU32<250>;
-        type AccountData = $crate::pallet_balances::AccountData<<$runtime as $crate::pallet_balances::Config>::Balance>;
+        type AccountData = $module_path::pallet_balances::AccountData<<$runtime as $module_path::pallet_balances::Config>::Balance>;
     }
 
     // Configure pallet balances
-    impl $crate::pallet_balances::Config for $runtime {
+    impl $module_path::pallet_balances::Config for $runtime {
         type RuntimeEvent = RuntimeEvent;
         type WeightInfo = ();
         type Balance = u128;
@@ -227,7 +232,7 @@ mod construct_runtime {
     }
 
     // Configure pallet timestamp
-    impl $crate::pallet_timestamp::Config for $runtime {
+    impl $module_path::pallet_timestamp::Config for $runtime {
         type Moment = u64;
         type OnTimestampSet = ();
         type MinimumPeriod = ConstU64<1>;
@@ -250,8 +255,8 @@ mod construct_runtime {
     }
 
     parameter_types! {
-        pub SandboxSchedule: $crate::pallet_contracts::Schedule<$runtime> = {
-            <$crate::pallet_contracts::Schedule<$runtime>>::default()
+        pub SandboxSchedule: $module_path::pallet_contracts::Schedule<$runtime> = {
+            <$module_path::pallet_contracts::Schedule<$runtime>>::default()
         };
         pub DeletionWeightLimit: Weight = Weight::zero();
         pub DefaultDepositLimit: BalanceOf = 10_000_000;
@@ -259,7 +264,7 @@ mod construct_runtime {
         pub MaxDelegateDependencies: u32 = 32;
     }
 
-    impl $crate::pallet_contracts::Config for $runtime {
+    impl $module_path::pallet_contracts::Config for $runtime {
         type Time = Timestamp;
         type Randomness = SandboxRandomness;
         type Currency = Balances;
@@ -270,10 +275,10 @@ mod construct_runtime {
         type WeightInfo = ();
         type ChainExtension = $chain_extension;
         type Schedule = SandboxSchedule;
-        type CallStack = [$crate::pallet_contracts::Frame<Self>; 5];
+        type CallStack = [$module_path::pallet_contracts::Frame<Self>; 5];
         type DepositPerByte = ConstU128<1>;
         type DepositPerItem = ConstU128<1>;
-        type AddressGenerator = $crate::pallet_contracts::DefaultAddressGenerator;
+        type AddressGenerator = $module_path::pallet_contracts::DefaultAddressGenerator;
         type MaxCodeLen = ConstU32<{ 123 * 1024 }>;
         type MaxStorageKeyLen = ConstU32<128>;
         type UnsafeUnstableInterface = ConstBool<false>;
