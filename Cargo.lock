@@ -1231,6 +1231,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "ink_sandbox",
+ "log",
  "parity-scale-codec",
  "parity-scale-codec-derive",
  "scale-info",

@@ -10,6 +10,7 @@ version.workspace = true
 description = "Minimal sufficient architecture that allows for a fully functional ink! contract development"
 
 [dependencies]
+log = { workspace = true }
 contract-metadata = { workspace = true, optional = true }
 contract-transcode = { workspace = true, optional = true }
 frame-support = { workspace = true }

@@ -171,6 +171,8 @@ impl<T: Sandbox> Session<T>
 where
     T::Runtime: Config,
 {
+    const LOG_TARGET: &'static str = "pop-drink::session";
+
     /// Sets a new actor and returns updated `self`.
     pub fn with_actor(self, actor: AccountIdFor<T::Runtime>) -> Self {
         Self { actor, ..self }
@@ -392,6 +394,11 @@ where
 
     /// Uploads a raw contract code. In case of success returns the code hash.
     pub fn upload(&mut self, contract_bytes: Vec<u8>) -> Result<HashFor<T::Runtime>, SessionError> {
+        log::debug!(
+            target: Self::LOG_TARGET,
+            "upload: bytes={:?}",
+            contract_bytes
+        );
         let result = self.sandbox.upload_contract(
             contract_bytes,
             self.actor.clone(),
@@ -428,6 +435,10 @@ where
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
     ) -> Result<Self, SessionError> {
+        log::debug!(
+            target: Self::LOG_TARGET,
+            "call_and: message={message}, args={args:?}, endowment={endowment:?}",
+        );
         // We ignore result, so we can pass `()` as the message result type, which will never fail
         // at decoding.
         self.call_internal::<_, ()>(None, message, args, endowment)
@@ -442,6 +453,10 @@ where
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
     ) -> Result<Self, SessionError> {
+        log::debug!(
+            target: Self::LOG_TARGET,
+            "call_with_address_and: address={address}, message={message}, args={args:?}, endowment={endowment:?}",
+        );
         // We ignore result, so we can pass `()` as the message result type, which will never fail
         // at decoding.
         self.call_internal::<_, ()>(Some(address), message, args, endowment)
@@ -455,6 +470,10 @@ where
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
     ) -> Result<MessageResult<V>, SessionError> {
+        log::debug!(
+            target: Self::LOG_TARGET,
+            "call: message={message}, args={args:?}, endowment={endowment:?}",
+        );
         self.call_internal::<_, V>(None, message, args, endowment)
     }
 
@@ -466,6 +485,10 @@ where
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
     ) -> Result<E, SessionError> {
+        log::debug!(
+            target: Self::LOG_TARGET,
+            "call_and_expect_error: message={message}, args={args:?}, endowment={endowment:?}",
+        );
         Ok(self
             .call_internal::<_, Result<(), E>>(None, message, args, endowment)
             .expect_err("Call should fail")
@@ -483,6 +506,10 @@ where
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
     ) -> Result<MessageResult<V>, SessionError> {
+        log::debug!(
+            target: Self::LOG_TARGET,
+            "call_with_address: address={address}, message={message}, args={args:?}, endowment={endowment:?}",
+        );
         self.call_internal(Some(address), message, args, endowment)
     }
 
