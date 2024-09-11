@@ -1,11 +1,6 @@
-use crate::{
-    AccountIdFor,
-    Sandbox,
-};
-use frame_support::{
-    sp_runtime::DispatchError,
-    traits::fungible::Mutate,
-};
+use frame_support::{sp_runtime::DispatchError, traits::fungible::Mutate};
+
+use crate::{AccountIdFor, Sandbox};
 
 type BalanceOf<R> = <R as pallet_balances::Config>::Balance;
 
@@ -32,10 +27,7 @@ where
     /// # Arguments
     ///
     /// * `address` - The address of the account to query.
-    fn free_balance(
-        &mut self,
-        address: &AccountIdFor<T::Runtime>,
-    ) -> BalanceOf<T::Runtime>;
+    fn free_balance(&mut self, address: &AccountIdFor<T::Runtime>) -> BalanceOf<T::Runtime>;
 }
 
 impl<T> BalanceAPI<T> for T
@@ -48,15 +40,10 @@ where
         address: &AccountIdFor<T::Runtime>,
         amount: BalanceOf<T::Runtime>,
     ) -> Result<BalanceOf<T::Runtime>, DispatchError> {
-        self.execute_with(|| {
-            pallet_balances::Pallet::<T::Runtime>::mint_into(address, amount)
-        })
+        self.execute_with(|| pallet_balances::Pallet::<T::Runtime>::mint_into(address, amount))
     }
 
-    fn free_balance(
-        &mut self,
-        address: &AccountIdFor<T::Runtime>,
-    ) -> BalanceOf<T::Runtime> {
+    fn free_balance(&mut self, address: &AccountIdFor<T::Runtime>) -> BalanceOf<T::Runtime> {
         self.execute_with(|| pallet_balances::Pallet::<T::Runtime>::free_balance(address))
     }
 }

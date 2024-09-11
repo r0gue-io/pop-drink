@@ -1,16 +1,10 @@
-use crate::{
-    EventRecordOf,
-    RuntimeCall,
-    Sandbox,
-};
 use frame_support::sp_runtime::{
-    traits::{
-        Dispatchable,
-        Saturating,
-    },
+    traits::{Dispatchable, Saturating},
     DispatchResultWithInfo,
 };
 use frame_system::pallet_prelude::BlockNumberFor;
+
+use crate::{EventRecordOf, RuntimeCall, Sandbox};
 
 /// System API for the sandbox.
 pub trait SystemAPI {
@@ -86,9 +80,7 @@ where
         self.execute_with(frame_system::Pallet::<Self::T>::reset_events)
     }
 
-    fn runtime_call<
-        Origin: Into<<RuntimeCall<Self::T> as Dispatchable>::RuntimeOrigin>,
-    >(
+    fn runtime_call<Origin: Into<<RuntimeCall<Self::T> as Dispatchable>::RuntimeOrigin>>(
         &mut self,
         call: RuntimeCall<Self::T>,
         origin: Origin,
@@ -99,19 +91,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        api::prelude::*,
-        DefaultSandbox,
-        RuntimeCall,
-        RuntimeEventOf,
-        RuntimeOf,
-        Sandbox,
-    };
-    use frame_support::sp_runtime::{
-        traits::Dispatchable,
-        AccountId32,
-        DispatchResultWithInfo,
-    };
+    use frame_support::sp_runtime::{traits::Dispatchable, AccountId32, DispatchResultWithInfo};
+
+    use crate::{api::prelude::*, DefaultSandbox, RuntimeCall, RuntimeEventOf, RuntimeOf, Sandbox};
 
     fn make_transfer(
         sandbox: &mut DefaultSandbox,
@@ -187,8 +169,7 @@ mod tests {
         let mut sandbox = DefaultSandbox::default();
         const RECIPIENT: AccountId32 = AccountId32::new([3u8; 32]);
 
-        make_transfer(&mut sandbox, RECIPIENT.clone(), 1)
-            .expect("Failed to make transfer");
+        make_transfer(&mut sandbox, RECIPIENT.clone(), 1).expect("Failed to make transfer");
 
         assert!(!sandbox.events().is_empty());
         sandbox.reset_events();

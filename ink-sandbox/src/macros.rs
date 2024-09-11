@@ -191,6 +191,7 @@ mod construct_runtime {
         traits::{ConstBool, ConstU128, ConstU32, ConstU64, Currency, Randomness},
         weights::Weight,
     };
+    use $module_path::frame_system::EnsureSigned;
 
     // Define the runtime type as a collection of pallets
     construct_runtime!(
@@ -265,31 +266,39 @@ mod construct_runtime {
     }
 
     impl $module_path::pallet_contracts::Config for $runtime {
-        type Time = Timestamp;
-        type Randomness = SandboxRandomness;
-        type Currency = Balances;
-        type RuntimeEvent = RuntimeEvent;
-        type RuntimeCall = RuntimeCall;
+        type AddressGenerator = $module_path::pallet_contracts::DefaultAddressGenerator;
+        type ApiVersion = ();
         type CallFilter = ();
-        type WeightPrice = Self;
-        type WeightInfo = ();
-        type ChainExtension = $chain_extension;
-        type Schedule = SandboxSchedule;
+        // TestFilter;
         type CallStack = [$module_path::pallet_contracts::Frame<Self>; 5];
+        type ChainExtension = $chain_extension;
+        type CodeHashLockupDepositPercent = CodeHashLockupDepositPercent;
+        type Currency = Balances;
+        type Debug = $debug;
+        // TestDebug;
+        type DefaultDepositLimit = DefaultDepositLimit;
         type DepositPerByte = ConstU128<1>;
         type DepositPerItem = ConstU128<1>;
-        type AddressGenerator = $module_path::pallet_contracts::DefaultAddressGenerator;
-        type MaxCodeLen = ConstU32<{ 123 * 1024 }>;
-        type MaxStorageKeyLen = ConstU32<128>;
-        type UnsafeUnstableInterface = ConstBool<false>;
-        type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
-        type Migrations = ();
-        type DefaultDepositLimit = DefaultDepositLimit;
-        type Debug = $debug;
-        type CodeHashLockupDepositPercent = CodeHashLockupDepositPercent;
-        type MaxDelegateDependencies = MaxDelegateDependencies;
-        type RuntimeHoldReason = RuntimeHoldReason;
         type Environment = ();
+        type InstantiateOrigin = EnsureSigned<Self::AccountId>;
+        type MaxCodeLen = ConstU32<{ 123 * 1024 }>;
+        type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
+        type MaxDelegateDependencies = MaxDelegateDependencies;
+        type MaxStorageKeyLen = ConstU32<128>;
+        type Migrations = ();
+        // crate::migration::codegen::BenchMigrations;
+        type Randomness = SandboxRandomness;
+        type RuntimeCall = RuntimeCall;
+        type RuntimeEvent = RuntimeEvent;
+        type RuntimeHoldReason = RuntimeHoldReason;
+        type Schedule = SandboxSchedule;
+        type Time = Timestamp;
+        type UnsafeUnstableInterface = ConstBool<false>;
+        // UnstableInterface;
+        type UploadOrigin = EnsureSigned<Self::AccountId>;
+        type WeightInfo = ();
+        type WeightPrice = ();
+        // Self;
         type Xcm = ();
     }
 

@@ -1,13 +1,15 @@
-use crate::{
-    AccountIdFor, ContractExecResultFor, ContractInstantiateResultFor, EventRecordOf, Sandbox,
-};
+use std::ops::Not;
+
 use frame_support::{traits::fungible::Inspect, weights::Weight};
 use frame_system::Config as SysConfig;
 use pallet_contracts::{
     Code, CodeUploadResult, CollectEvents, ContractInstantiateResult, DebugInfo, Determinism,
 };
 use scale::Decode as _;
-use std::ops::Not;
+
+use crate::{
+    AccountIdFor, ContractExecResultFor, ContractInstantiateResultFor, EventRecordOf, Sandbox,
+};
 
 type BalanceOf<R> =
     <<R as pallet_contracts::Config>::Currency as Inspect<AccountIdFor<R>>>::Balance;
@@ -219,10 +221,11 @@ pub fn decode_debug_buffer(buffer: &[u8]) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{api::prelude::*, DefaultSandbox, RuntimeEventOf, RuntimeOf};
     use frame_support::sp_runtime::traits::Hash;
     use pallet_contracts::Origin;
+
+    use super::*;
+    use crate::{api::prelude::*, DefaultSandbox, RuntimeEventOf, RuntimeOf};
 
     fn compile_module(contract_name: &str) -> Vec<u8> {
         let path = [

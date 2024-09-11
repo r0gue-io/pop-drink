@@ -31,18 +31,13 @@ where
     }
 
     fn set_timestamp(&mut self, timestamp: MomentOf<Self::T>) {
-        self.execute_with(|| {
-            pallet_timestamp::Pallet::<T::Runtime>::set_timestamp(timestamp)
-        })
+        self.execute_with(|| pallet_timestamp::Pallet::<T::Runtime>::set_timestamp(timestamp))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        api::prelude::*,
-        DefaultSandbox,
-    };
+    use crate::{api::prelude::*, DefaultSandbox};
 
     #[test]
     fn getting_and_setting_timestamp_works() {
