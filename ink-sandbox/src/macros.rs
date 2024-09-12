@@ -64,31 +64,8 @@ impl<
 }
 
 #[macro_export]
-macro_rules! create_sandbox {
-    ($sandbox:ident, $runtime:ident) => {
-        use $crate::frame_support::sp_runtime::AccountId32;
-
-        // Implement `crate::Sandbox` trait
-
-        /// Default initial balance for the default account.
-        pub const UNIT: u128 = 10_000_000_000;
-        pub const INIT_AMOUNT: u128 = 100_000_000 * UNIT;
-        pub const DEFAULT_ACCOUNT: AccountId32 = AccountId32::new([1u8; 32]);
-
-        pub struct $sandbox {
-            ext: $crate::TestExternalities,
-        }
-
-        impl ::std::default::Default for $sandbox {
-            fn default() -> Self {
-                let ext = $crate::macros::BlockBuilder::<$runtime>::new_ext(vec![(
-                    DEFAULT_ACCOUNT,
-                    INIT_AMOUNT,
-                )]);
-                Self { ext }
-            }
-        }
-
+macro_rules! impl_sandbox {
+    ($sandbox:ident, $runtime:ident, $block_builder:ident) => {
         impl $crate::Sandbox for $sandbox {
             type Runtime = $runtime;
 
@@ -117,13 +94,13 @@ macro_rules! create_sandbox {
                 height: $crate::frame_system::pallet_prelude::BlockNumberFor<Self::Runtime>,
                 parent_hash: <Self::Runtime as $crate::frame_system::Config>::Hash,
             ) {
-                $crate::macros::BlockBuilder::<Self::Runtime>::initialize_block(height, parent_hash)
+                $block_builder::<Self::Runtime>::initialize_block(height, parent_hash)
             }
 
             fn finalize_block(
                 height: $crate::frame_system::pallet_prelude::BlockNumberFor<Self::Runtime>,
             ) -> <Self::Runtime as $crate::frame_system::Config>::Hash {
-                $crate::macros::BlockBuilder::<Self::Runtime>::finalize_block(height)
+                $block_builder::<Self::Runtime>::finalize_block(height)
             }
 
             fn default_actor() -> $crate::AccountIdFor<Self::Runtime> {
@@ -140,6 +117,34 @@ macro_rules! create_sandbox {
                 Some(account).into()
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! create_sandbox {
+    ($sandbox:ident, $runtime:ident) => {
+        use $crate::frame_support::sp_runtime::AccountId32;
+        use $crate::macros::BlockBuilder;
+
+        // Implement `crate::Sandbox` trait
+
+        /// Default initial balance for the default account.
+        pub const UNIT: u128 = 10_000_000_000;
+        pub const INIT_AMOUNT: u128 = 100_000_000 * UNIT;
+        pub const DEFAULT_ACCOUNT: AccountId32 = AccountId32::new([1u8; 32]);
+
+        pub struct $sandbox {
+            ext: $crate::TestExternalities,
+        }
+
+        impl ::std::default::Default for $sandbox {
+            fn default() -> Self {
+                let ext = BlockBuilder::<$runtime>::new_ext(vec![(DEFAULT_ACCOUNT, INIT_AMOUNT)]);
+                Self { ext }
+            }
+        }
+
+        $crate::impl_sandbox!($sandbox, $runtime, BlockBuilder);
     };
 }
 
