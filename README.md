@@ -1,7 +1,7 @@
 [![Rust checks](https://github.com/Cardinal-Cryptography/drink/actions/workflows/rust-checks.yml/badge.svg)](https://github.com/Cardinal-Cryptography/drink/actions/workflows/rust-checks.yml)
 [![Built for ink!](https://raw.githubusercontent.com/paritytech/ink/master/.images/built-for-ink.svg)](https://github.com/paritytech/ink)
 
-<h1 align="center"> DRink! </h1>
+<h1 align="center"> Pop DRink! (forked from DRink!) </h1>
 <p align="center"> <b>D</b>echained <b>R</b>eady-to-play <b>ink!</b> playground </p>
 
 > [!IMPORTANT]
