@@ -1,6 +1,7 @@
+use std::str::FromStr;
+
 use clap::Parser;
 use drink::AccountId32;
-use std::str::FromStr;
 
 #[derive(Parser)]
 pub enum CliCommand {

@@ -122,6 +122,7 @@ where
         gas_limit: Weight,
         storage_deposit_limit: Option<BalanceOf<Self::T>>,
     ) -> ContractInstantiateResultFor<Self::T> {
+        log::debug!("deploy_contract: value={value:?}, origin={origin}, gas_limit={gas_limit:?}, storage_deposit_limit={storage_deposit_limit:?}");
         self.execute_with(|| {
             pallet_contracts::Pallet::<Self::T>::bare_instantiate(
                 origin,
@@ -148,6 +149,7 @@ where
         storage_deposit_limit: Option<BalanceOf<Self::T>>,
     ) -> ContractInstantiateResult<AccountIdFor<Self::T>, BalanceOf<Self::T>, EventRecordOf<Self::T>>
     {
+        log::debug!("instantiate_contract: code_hash={code_hash:?}, value={value:?}, origin={origin}, gas_limit={gas_limit:?}");
         let mut code_hash = &code_hash[..];
         self.execute_with(|| {
             pallet_contracts::Pallet::<Self::T>::bare_instantiate(

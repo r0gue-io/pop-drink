@@ -2218,6 +2218,7 @@ dependencies = [
  "frame-metadata",
  "frame-support",
  "frame-system",
+ "log",
  "pallet-balances",
  "pallet-contracts",
  "pallet-timestamp",

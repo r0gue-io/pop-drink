@@ -71,7 +71,8 @@ macro_rules! create_sandbox {
         // Implement `crate::Sandbox` trait
 
         /// Default initial balance for the default account.
-        pub const INITIAL_BALANCE: u128 = 1_000_000_000_000_000;
+        pub const UNIT: u128 = 10_000_000_000;
+        pub const INIT_AMOUNT: u128 = 100_000_000 * UNIT;
         pub const DEFAULT_ACCOUNT: AccountId32 = AccountId32::new([1u8; 32]);
 
         pub struct $sandbox {
@@ -82,7 +83,7 @@ macro_rules! create_sandbox {
             fn default() -> Self {
                 let ext = $crate::macros::BlockBuilder::<$runtime>::new_ext(vec![(
                     DEFAULT_ACCOUNT,
-                    INITIAL_BALANCE,
+                    INIT_AMOUNT,
                 )]);
                 Self { ext }
             }
