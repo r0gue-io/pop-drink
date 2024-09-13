@@ -65,7 +65,7 @@ impl<
 
 #[macro_export]
 macro_rules! impl_sandbox {
-    ($sandbox:ident, $runtime:ident, $block_builder:ident) => {
+    ($sandbox:ident, $runtime:ident, $block_builder:ident, $default_account:ident) => {
         impl $crate::Sandbox for $sandbox {
             type Runtime = $runtime;
 
@@ -104,7 +104,7 @@ macro_rules! impl_sandbox {
             }
 
             fn default_actor() -> $crate::AccountIdFor<Self::Runtime> {
-                DEFAULT_ACCOUNT
+                $default_account
             }
 
             fn get_metadata() -> $crate::RuntimeMetadataPrefixed {
@@ -144,7 +144,7 @@ macro_rules! create_sandbox {
             }
         }
 
-        $crate::impl_sandbox!($sandbox, $runtime, BlockBuilder);
+        $crate::impl_sandbox!($sandbox, $runtime, BlockBuilder, DEFAULT_ACCOUNT);
     };
 }
 
