@@ -1351,6 +1351,8 @@ dependencies = [
  "frame-metadata",
  "frame-support",
  "frame-system",
+ "log",
+ "pallet-assets",
  "pallet-balances",
  "pallet-contracts",
  "pallet-timestamp",
@@ -1766,6 +1768,24 @@ name = "opaque-debug"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
+
+[[package]]
+name = "pallet-assets"
+version = "37.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f79ef6a7763fc08177f014052469ee12aefcdad0d99a747372360c2f648d2cc4"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
 
 [[package]]
 name = "pallet-balances"

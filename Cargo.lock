@@ -2219,6 +2219,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
+ "pallet-assets",
  "pallet-balances",
  "pallet-contracts",
  "pallet-timestamp",
@@ -2773,6 +2774,24 @@ checksum = "57119c3b893986491ec9aa85056780d3a0f3cf4da7cc09dd3650dbd6c6738fb9"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "pallet-assets"
+version = "37.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f79ef6a7763fc08177f014052469ee12aefcdad0d99a747372360c2f648d2cc4"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

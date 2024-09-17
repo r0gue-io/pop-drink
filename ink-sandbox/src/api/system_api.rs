@@ -93,7 +93,7 @@ where
 mod tests {
     use frame_support::sp_runtime::{traits::Dispatchable, AccountId32, DispatchResultWithInfo};
 
-    use crate::{api::prelude::*, DefaultSandbox, RuntimeCall, RuntimeEventOf, RuntimeOf, Sandbox};
+    use crate::{api::prelude::{BalanceAPI, SystemAPI}, DefaultSandbox, RuntimeCall, RuntimeEventOf, RuntimeOf, Sandbox};
 
     fn make_transfer(
         sandbox: &mut DefaultSandbox,

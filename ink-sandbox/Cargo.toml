@@ -10,6 +10,7 @@ frame-metadata = { version = "16.0.0", default-features = false }
 frame-support = { version = "36.0.0", default-features = false }
 frame-system = { version = "36.1.0", default-features = false }
 pallet-contracts = { version = "35.0.0", default-features = false }
+pallet-assets = { version = "37.0.0", default-features = false }
 pallet-balances = { version = "37.0.0", default-features = false }
 pallet-timestamp = { version = "35.0.0", default-features = false }
 scale = { package = "parity-scale-codec", version = "3.6.9", default-features = false, features = [
@@ -35,6 +36,7 @@ std = [
  "frame-metadata/std",
  "frame-support/std",
  "frame-system/std",
+ "pallet-assets/std",
  "pallet-balances/std",
  "pallet-contracts/std",
  "pallet-timestamp/std",

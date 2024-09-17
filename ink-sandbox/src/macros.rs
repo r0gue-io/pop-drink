@@ -194,15 +194,17 @@ mod construct_runtime {
             traits::Convert,
              Perbill,
         },
-        traits::{ConstBool, ConstU128, ConstU32, ConstU64, Currency, Randomness},
+        traits::{AsEnsureOriginWithArg, ConstBool, ConstU128, ConstU32, ConstU64, Currency, Randomness},
         weights::Weight,
     };
     use $module_path::frame_system::EnsureSigned;
+    use $module_path::pallet_assets::Instance1;
 
     // Define the runtime type as a collection of pallets
     construct_runtime!(
         pub enum $runtime {
             System: $module_path::frame_system,
+            Assets: $module_path::pallet_assets::<Instance1>,
             Balances: $module_path::pallet_balances,
             Timestamp: $module_path::pallet_timestamp,
             Contracts: $module_path::pallet_contracts,
@@ -219,6 +221,27 @@ mod construct_runtime {
         type Version = ();
         type BlockHashCount = ConstU32<250>;
         type AccountData = $module_path::pallet_balances::AccountData<<$runtime as $module_path::pallet_balances::Config>::Balance>;
+    }
+
+    impl $module_path::pallet_assets::Config<Instance1> for $runtime {
+        type ApprovalDeposit = ConstU128<1>;
+        type AssetAccountDeposit = ConstU128<10>;
+        type AssetDeposit = ConstU128<1>;
+        type AssetId = u32;
+        type AssetIdParameter = u32;
+        type Balance = u128;
+        type CallbackHandle = ();
+        type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<Self::AccountId>>;
+        type Currency = Balances;
+        type Extra = ();
+        type ForceOrigin = EnsureSigned<Self::AccountId>;
+        type Freezer = ();
+        type MetadataDepositBase = ConstU128<1>;
+        type MetadataDepositPerByte = ConstU128<1>;
+        type RemoveItemsLimit = ConstU32<5>;
+        type RuntimeEvent = RuntimeEvent;
+        type StringLimit = ConstU32<50>;
+        type WeightInfo = ();
     }
 
     // Configure pallet balances
@@ -313,7 +336,7 @@ mod construct_runtime {
 
 // Export runtime type itself, pallets and useful types from the auxiliary module
 pub use construct_runtime::{
-    $sandbox, $runtime, Balances, Contracts, PalletInfo, RuntimeCall, RuntimeEvent, RuntimeHoldReason,
+    $sandbox, $runtime, Assets, Balances, Contracts, PalletInfo, RuntimeCall, RuntimeEvent, RuntimeHoldReason,
     RuntimeOrigin, System, Timestamp,
 };
     };

@@ -4,7 +4,7 @@ use crate::{AccountIdFor, Sandbox};
 
 type BalanceOf<R> = <R as pallet_balances::Config>::Balance;
 
-/// Balance API for the sandbox.
+/// Balances API for the sandbox.
 pub trait BalanceAPI<T: Sandbox>
 where
     T: Sandbox,

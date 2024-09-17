@@ -15,7 +15,7 @@ pub use {
         self,
         sp_runtime::{AccountId32, DispatchError},
     },
-    frame_system, pallet_balances, pallet_contracts, pallet_timestamp, paste,
+    frame_system, pallet_balances, pallet_assets, pallet_contracts, pallet_timestamp, paste,
     sp_core::crypto::Ss58Codec,
     sp_externalities::{self, Extension},
     sp_io::TestExternalities,

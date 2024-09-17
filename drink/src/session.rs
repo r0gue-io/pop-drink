@@ -62,7 +62,7 @@ pub const NO_SALT: Vec<u8> = vec![];
 /// # use ink_sandbox::AccountId32;
 /// # use drink::{
 /// #   session::Session,
-/// #   session::{NO_ARGS, NO_SALT, None},
+/// #   session::{NO_ARGS, NO_SALT},
 /// #   minimal::MinimalSandbox
 /// # };
 /// #
@@ -90,7 +90,7 @@ pub const NO_SALT: Vec<u8> = vec![];
 /// # use drink::{
 /// #   session::Session,
 /// #   minimal::MinimalSandbox,
-/// #   session::{NO_ARGS, None, NO_SALT}
+/// #   session::{NO_ARGS, NO_SALT}
 /// # };
 /// # fn get_transcoder() -> Arc<ContractMessageTranscoder> {
 /// #   Arc::new(ContractMessageTranscoder::load("").unwrap())
@@ -113,7 +113,7 @@ pub const NO_SALT: Vec<u8> = vec![];
 /// # use drink::{
 /// #   local_contract_file,
 /// #   session::Session,
-/// #   session::{ContractBundle, NO_ARGS, NO_SALT, None},
+/// #   session::{ContractBundle, NO_ARGS, NO_SALT},
 /// #   minimal::MinimalSandbox
 /// # };
 ///
@@ -132,7 +132,7 @@ pub struct Session<T: Sandbox>
 where
     T::Runtime: Config,
 {
-    sandbox: T,
+    pub sandbox: T,
 
     actor: AccountIdFor<T::Runtime>,
     gas_limit: Weight,
