@@ -13,12 +13,12 @@ mod ui;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Starts the CLI in the provided directory
-    #[arg(short, long, value_name = "DIRECTORY")]
-    path: Option<PathBuf>,
+	/// Starts the CLI in the provided directory
+	#[arg(short, long, value_name = "DIRECTORY")]
+	path: Option<PathBuf>,
 }
 
 fn main() -> Result<()> {
-    let args = Args::parse();
-    run_ui(args.path)
+	let args = Args::parse();
+	run_ui(args.path)
 }

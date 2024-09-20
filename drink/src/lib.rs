@@ -14,9 +14,9 @@ pub use drink_test_macro::{contract_bundle_provider, test};
 pub use errors::Error;
 pub use frame_support;
 pub use ink_sandbox::{
-    self, api as sandbox_api, create_sandbox, create_sandbox_with_runtime, impl_sandbox,
-    pallet_balances, pallet_contracts, pallet_timestamp, sp_externalities, AccountId32,
-    DispatchError, Sandbox, Ss58Codec, Weight,
+	self, api as sandbox_api, create_sandbox, create_sandbox_with_runtime, impl_sandbox,
+	pallet_balances, pallet_contracts, pallet_timestamp, sp_externalities, AccountId32,
+	DispatchError, Sandbox, Ss58Codec, Weight,
 };
 #[cfg(feature = "session")]
 pub use session::mock::{mock_message, ContractMock, MessageMock, MockedCallResult, Selector};
@@ -27,12 +27,8 @@ pub type DrinkResult<T> = std::result::Result<T, Error>;
 /// Minimal Sandbox runtime used for testing contracts with drink!.
 #[allow(missing_docs)]
 pub mod minimal {
-    use ink_sandbox::create_sandbox_with_runtime;
+	use ink_sandbox::create_sandbox_with_runtime;
 
-    // create_sandbox_with_runtime!(MinimalSandbox);
-    create_sandbox_with_runtime!(
-        MinimalSandbox,
-        (),
-        crate::pallet_contracts_debugging::DrinkDebug
-    );
+	// create_sandbox_with_runtime!(MinimalSandbox);
+	create_sandbox_with_runtime!(MinimalSandbox, (), crate::pallet_contracts_debugging::DrinkDebug);
 }

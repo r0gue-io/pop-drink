@@ -38,15 +38,17 @@ type SynResult<T> = Result<T, syn::Error>;
 ///
 /// 1. The root contract package (if any) is assumed to be built without any features.
 ///
-/// 2. All contract dependencies will be built with a union of all features enabled on that package (through potentially
-/// different configurations or dependency paths), **excluding** `ink-as-dependency` and `std` features.
+/// 2. All contract dependencies will be built with a union of all features enabled on that package
+///    (through potentially
+/// different configurations or dependency paths), **excluding** `ink-as-dependency` and `std`
+/// features.
 ///
 /// # Creating a session object
 ///
-/// The macro will also create a new mutable session object and pass it to the decorated function by value. You can
-/// configure which sandbox should be used (by specifying a path to a type implementing
-/// `ink_sandbox::Sandbox` trait. Thus, your testcase function should accept a single argument:
-/// `mut session: Session<_>`.
+/// The macro will also create a new mutable session object and pass it to the decorated function by
+/// value. You can configure which sandbox should be used (by specifying a path to a type
+/// implementing `ink_sandbox::Sandbox` trait. Thus, your testcase function should accept a single
+/// argument: `mut session: Session<_>`.
 ///
 /// By default, the macro will use `drink::minimal::MinimalSandbox`.
 ///
@@ -62,47 +64,47 @@ type SynResult<T> = Result<T, syn::Error>;
 /// ```
 #[proc_macro_attribute]
 pub fn test(attr: TokenStream, item: TokenStream) -> TokenStream {
-    match test_internal(attr.into(), item.into()) {
-        Ok(ts) => ts.into(),
-        Err(e) => e.to_compile_error().into(),
-    }
+	match test_internal(attr.into(), item.into()) {
+		Ok(ts) => ts.into(),
+		Err(e) => e.to_compile_error().into(),
+	}
 }
 
 #[derive(FromMeta)]
 struct TestAttributes {
-    sandbox: Option<syn::Path>,
+	sandbox: Option<syn::Path>,
 }
 
 /// Auxiliary function to enter ?-based error propagation.
 fn test_internal(attr: TokenStream2, item: TokenStream2) -> SynResult<TokenStream2> {
-    let item_fn = syn::parse2::<ItemFn>(item)?;
-    let macro_args = TestAttributes::from_list(&NestedMeta::parse_meta_list(attr)?)?;
+	let item_fn = syn::parse2::<ItemFn>(item)?;
+	let macro_args = TestAttributes::from_list(&NestedMeta::parse_meta_list(attr)?)?;
 
-    // TODO: why do we build the contracts again?
-    build_contracts();
+	// TODO: why do we build the contracts again?
+	build_contracts();
 
-    let fn_vis = item_fn.vis;
-    let fn_attrs = item_fn.attrs;
-    let fn_block = item_fn.block;
-    let fn_name = item_fn.sig.ident;
-    let fn_async = item_fn.sig.asyncness;
-    let fn_generics = item_fn.sig.generics;
-    let fn_output = item_fn.sig.output;
-    let fn_const = item_fn.sig.constness;
-    let fn_unsafety = item_fn.sig.unsafety;
+	let fn_vis = item_fn.vis;
+	let fn_attrs = item_fn.attrs;
+	let fn_block = item_fn.block;
+	let fn_name = item_fn.sig.ident;
+	let fn_async = item_fn.sig.asyncness;
+	let fn_generics = item_fn.sig.generics;
+	let fn_output = item_fn.sig.output;
+	let fn_const = item_fn.sig.constness;
+	let fn_unsafety = item_fn.sig.unsafety;
 
-    let sandbox = macro_args
-        .sandbox
-        .unwrap_or(syn::parse2(quote! { ::drink::minimal::MinimalSandbox })?);
+	let sandbox = macro_args
+		.sandbox
+		.unwrap_or(syn::parse2(quote! { ::drink::minimal::MinimalSandbox })?);
 
-    Ok(quote! {
-        #[test]
-        #(#fn_attrs)*
-        #fn_vis #fn_async #fn_const #fn_unsafety fn #fn_name #fn_generics () #fn_output {
-            let mut session = Session::<#sandbox>::default();
-            #fn_block
-        }
-    })
+	Ok(quote! {
+		#[test]
+		#(#fn_attrs)*
+		#fn_vis #fn_async #fn_const #fn_unsafety fn #fn_name #fn_generics () #fn_output {
+			let mut session = Session::<#sandbox>::default();
+			#fn_block
+		}
+	})
 }
 
 /// Defines a contract bundle provider.
@@ -145,37 +147,37 @@ fn test_internal(attr: TokenStream2, item: TokenStream2) -> SynResult<TokenStrea
 /// ```
 #[proc_macro_attribute]
 pub fn contract_bundle_provider(attr: TokenStream, item: TokenStream) -> TokenStream {
-    match contract_bundle_provider_internal(attr.into(), item.into()) {
-        Ok(ts) => ts.into(),
-        Err(e) => e.to_compile_error().into(),
-    }
+	match contract_bundle_provider_internal(attr.into(), item.into()) {
+		Ok(ts) => ts.into(),
+		Err(e) => e.to_compile_error().into(),
+	}
 }
 
 /// Auxiliary function to enter ?-based error propagation.
 fn contract_bundle_provider_internal(
-    _attr: TokenStream2,
-    item: TokenStream2,
+	_attr: TokenStream2,
+	item: TokenStream2,
 ) -> SynResult<TokenStream2> {
-    let enum_item = parse_bundle_enum(item)?;
-    let bundle_registry = build_contracts();
-    Ok(bundle_registry.generate_bundle_provision(enum_item))
+	let enum_item = parse_bundle_enum(item)?;
+	let bundle_registry = build_contracts();
+	Ok(bundle_registry.generate_bundle_provision(enum_item))
 }
 
 fn parse_bundle_enum(item: TokenStream2) -> SynResult<ItemEnum> {
-    let enum_item = syn::parse2::<ItemEnum>(item)?;
+	let enum_item = syn::parse2::<ItemEnum>(item)?;
 
-    if !enum_item.generics.params.is_empty() {
-        return Err(syn::Error::new_spanned(
-            enum_item.generics.params,
-            "ContractBundleProvider must not be generic",
-        ));
-    }
-    if !enum_item.variants.is_empty() {
-        return Err(syn::Error::new_spanned(
-            enum_item.variants,
-            "ContractBundleProvider must not have variants",
-        ));
-    }
+	if !enum_item.generics.params.is_empty() {
+		return Err(syn::Error::new_spanned(
+			enum_item.generics.params,
+			"ContractBundleProvider must not be generic",
+		));
+	}
+	if !enum_item.variants.is_empty() {
+		return Err(syn::Error::new_spanned(
+			enum_item.variants,
+			"ContractBundleProvider must not have variants",
+		));
+	}
 
-    Ok(enum_item)
+	Ok(enum_item)
 }
