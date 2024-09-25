@@ -1,13 +1,13 @@
 use frame_support::{
-    sp_runtime::DispatchError,
+    sp_runtime::{traits::Dispatchable, DispatchError},
     traits::fungibles::{
-        approvals::{Inspect as ApprovalsInspect, Mutate as ApprovalsMutate},
-        Create, Inspect, Mutate,
+        approvals::{Inspect as _, Mutate as _},
+        Create, Destroy, Inspect, Mutate,
     },
 };
 use pallet_assets::Instance1;
 
-use crate::{AccountIdFor, Sandbox};
+use crate::{AccountIdFor, RuntimeCall, Sandbox};
 
 type AssetIdOf<T> = <AssetsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::AssetId;
 type AssetsOf<T> = pallet_assets::Pallet<T, Instance1>;
@@ -19,6 +19,9 @@ where
     T: Sandbox,
     T::Runtime: pallet_assets::Config<Instance1>,
 {
+    /// The runtime pallet-assets config.
+    type T: pallet_assets::Config<Instance1>;
+
     /// Creates `value` amount of tokens and assigns them to `account`, increasing the total supply.
     ///
     /// # Arguments
@@ -30,6 +33,28 @@ where
         id: &AssetIdOf<T::Runtime>,
         owner: &AccountIdFor<T::Runtime>,
         min_balance: BalanceOf<T::Runtime>,
+    ) -> Result<(), DispatchError>;
+
+    /// Start the destruction an existing fungible asset.
+    ///
+    /// # Arguments
+    /// * `asset` - ID of the asset.
+    fn destroy(&mut self, asset: &AssetIdOf<T::Runtime>) -> Result<(), DispatchError>;
+
+    /// Start the destruction an existing fungible asset.
+    ///
+    /// # Arguments
+    /// * `asset` - ID of the asset.
+    /// * `name` - Token name.
+    /// * `symbol` - Token symbol.
+    /// * `decimals` - Token decimals.
+    fn set_metadata<Origin: Into<<RuntimeCall<Self::T> as Dispatchable>::RuntimeOrigin>>(
+        &mut self,
+        origin: Origin,
+        asset: &AssetIdOf<T::Runtime>,
+        name: Vec<u8>,
+        symbol: Vec<u8>,
+        decimals: u8,
     ) -> Result<(), DispatchError>;
 
     /// Approves `spender` to spend `value` amount of tokens on behalf of the caller.
@@ -102,6 +127,8 @@ where
     T: Sandbox,
     T::Runtime: pallet_assets::Config<Instance1>,
 {
+    type T = T::Runtime;
+
     fn create(
         &mut self,
         id: &AssetIdOf<T::Runtime>,
@@ -109,6 +136,29 @@ where
         min_balance: BalanceOf<T::Runtime>,
     ) -> Result<(), DispatchError> {
         self.execute_with(|| <pallet_assets::Pallet::<T::Runtime, Instance1> as Create<AccountIdFor<T::Runtime>>>::create(id.clone(), owner.clone(), true, min_balance))
+    }
+
+    fn destroy(&mut self, asset: &AssetIdOf<T::Runtime>) -> Result<(), DispatchError> {
+        self.execute_with(|| <pallet_assets::Pallet::<T::Runtime, Instance1> as Destroy<AccountIdFor<T::Runtime>>>::start_destroy(asset.clone(), None))
+    }
+
+    fn set_metadata<Origin: Into<<RuntimeCall<Self::T> as Dispatchable>::RuntimeOrigin>>(
+        &mut self,
+        origin: Origin,
+        asset: &AssetIdOf<T::Runtime>,
+        name: Vec<u8>,
+        symbol: Vec<u8>,
+        decimals: u8,
+    ) -> Result<(), DispatchError> {
+        self.execute_with(|| {
+            pallet_assets::Pallet::<T::Runtime, Instance1>::set_metadata(
+                origin.into(),
+                asset.clone().into(),
+                name,
+                symbol,
+                decimals,
+            )
+        })
     }
 
     fn mint_into(
