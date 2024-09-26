@@ -1,0 +1,50 @@
+[package]
+name = "drink"
+authors = ["Cardinal"]
+edition = "2021"
+homepage = "https://github.com/Cardinal-Cryptography/drink"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/Cardinal-Cryptography/drink"
+version = "0.17.0"
+description = "Minimal sufficient architecture that allows for a fully functional ink! contract development"
+
+[dependencies]
+log.workspace = true
+#contract-metadata = { workspace = true, optional = true }
+contract-metadata.workspace = true
+#contract-transcode = { workspace = true, optional = true }
+contract-transcode.workspace = true
+scale.workspace = true
+scale-info.workspace = true
+#serde_json = { workspace = true, optional = true }
+serde_json.workspace = true
+thiserror.workspace = true
+wat.workspace = true
+parity-scale-codec-derive.workspace = true
+
+# Substrate dependencies
+frame-support.workspace = true
+frame-system.workspace = true
+sp-runtime-interface.workspace = true
+
+# Local
+drink-test-macro = {  path = "test-macro" }
+ink_sandbox.workspace = true
+
+[features]
+default = [
+    # This is required for the runtime-interface to work properly in the std env.
+    "std",
+#    "session",
+#    "macros",
+]
+#session = ["contract-metadata", "contract-transcode", "serde_json"]
+#macros = ["contract-metadata", "contract-transcode", "serde_json"]
+std = [
+    "frame-support/std",
+    "frame-system/std",
+    "scale/std",
+    "scale-info/std",
+    "sp-runtime-interface/std",
+]
