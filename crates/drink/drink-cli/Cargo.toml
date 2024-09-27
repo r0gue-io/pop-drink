@@ -20,5 +20,4 @@ thiserror.workspace = true
 
 # Local
 ink_sandbox.workspace = true
-#drink = { workspace = true, features = ["session"] }
-drink.workspace = true
+drink = { workspace = true, features = ["session"] }

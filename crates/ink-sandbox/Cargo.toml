@@ -30,18 +30,4 @@ default = [
  # This is required for the runtime-interface to work properly in the std env.
  "std",
 ]
-std = [
- "frame-metadata/std",
- "frame-support/std",
- "frame-system/std",
- "pallet-assets/std",
- "pallet-balances/std",
- "pallet-contracts/std",
- "pallet-timestamp/std",
- "scale/std",
- "scale-info/std",
- "sp-core/std",
- "sp-externalities/std",
- "sp-io/std",
- "sp-runtime-interface/std",
-]
+std = []
