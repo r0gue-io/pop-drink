@@ -1,0 +1,23 @@
+[package]
+name = "drink-test-macro"
+authors = ["Cardinal"]
+edition = "2021"
+homepage = "https://github.com/Cardinal-Cryptography/drink"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/Cardinal-Cryptography/drink"
+version = "0.17.0"
+description = "Procedural macro providing a `#[drink::test]` attribute for `drink`-based contract testing"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+cargo_metadata = { workspace = true }
+contract-build = { workspace = true }
+contract-metadata = { workspace = true }
+convert_case = { workspace = true }
+darling = { workspace = true }
+proc-macro2 = { workspace = true }
+syn = { workspace = true, features = ["full"] }
+quote = { workspace = true }
