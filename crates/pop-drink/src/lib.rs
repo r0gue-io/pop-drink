@@ -79,7 +79,7 @@ pub mod utils {
 
     // This is used to resolve type mismatches between the `AccountId` in the quasi testing
     // environment and the contract environment.
-    fn account_id_from_slice(s: &[u8; 32]) -> pop_api::primitives::AccountId {
+    pub fn account_id_from_slice(s: &[u8; 32]) -> pop_api::primitives::AccountId {
         pop_api::primitives::AccountId::decode(&mut &s[..]).expect("Should be decoded to AccountId")
     }
 
