@@ -1,21 +1,24 @@
 [package]
+edition = "2021"
 name = "pop-drink"
 version = "0.1.0"
-edition = "2021"
 
 [dependencies]
-drink.workspace = true
-ink_sandbox.workspace = true
-pop-runtime-devnet.workspace = true
-frame-support.workspace = true
-sp-io.workspace = true
+drink = { workspace = true, default-features = false }
+frame-support = { workspace = true, default-features = false }
+ink_sandbox = { workspace = true, default-features = false }
+pop-runtime-devnet = { workspace = true, default-features = false }
+sp-io = { workspace = true, default-features = false }
 
 [features]
 default = [
-    "std",
+	"std",
 ]
 std = [
-    "pop-runtime-devnet/std",
-    "frame-support/std",
-    "sp-io/std",
+	"drink/std",
+	"frame-support/std",
+	"ink_sandbox/std",
+	"pop-runtime-devnet/drink",
+	"pop-runtime-devnet/std",
+	"sp-io/std",
 ]
