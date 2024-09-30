@@ -13,3 +13,15 @@ frame-support.workspace = true
 sp-io.workspace = true
 scale.workspace = true
 pop-api.workspace = true
+
+[features]
+default = [
+    "std",
+]
+std = [
+    "pop-runtime-devnet/std",
+    "pop-api/std",
+    "scale/std",
+    "frame-support/std",
+    "sp-io/std",
+]

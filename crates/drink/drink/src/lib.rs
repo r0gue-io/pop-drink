@@ -4,10 +4,8 @@
 pub mod errors;
 pub mod pallet_contracts_debugging;
 /// Necessary exports in ink_e2e_sandbox
-#[cfg(feature = "session")]
 pub mod session;
 
-#[cfg(feature = "macros")]
 pub use drink_test_macro::{contract_bundle_provider, test};
 pub use errors::Error;
 pub use frame_support;
@@ -16,7 +14,7 @@ pub use ink_sandbox::{
 	pallet_balances, pallet_contracts, pallet_timestamp, sp_externalities, AccountId32,
 	DispatchError, Sandbox, Ss58Codec, Weight,
 };
-#[cfg(feature = "session")]
+// #[cfg(feature = "session")]
 pub use session::mock::{mock_message, ContractMock, MessageMock, MockedCallResult, Selector};
 
 /// Main result type for the drink crate.
