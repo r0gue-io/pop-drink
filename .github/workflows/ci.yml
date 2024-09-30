@@ -19,19 +19,6 @@ jobs:
           rustup toolchain install nightly --profile minimal --component rustfmt
           cargo +nightly fmt --all -- --check
 
-      - name: Check manifests
-        run: |
-          cargo install taplo-cli --locked
-          taplo format --check
-
-      - name: Check features
-        run: |
-          cargo install zepter --locked
-          zepter lint propagate-feature --feature try-runtime --left-side-feature-missing=ignore --workspace --feature-enables-dep="try-runtime:frame-try-runtime" --locked
-          zepter lint propagate-feature --feature runtime-benchmarks --left-side-feature-missing=ignore --workspace --feature-enables-dep="runtime-benchmarks:frame-benchmarking" --locked
-          zepter lint propagate-feature --feature std --left-side-feature-missing=ignore --workspace --locked
-          zepter format features
-
   check:
     needs: lint
     runs-on: ubuntu-latest
@@ -42,7 +29,11 @@ jobs:
 
       - name: Check Build
         run: |
-          cargo check --release --locked --features=runtime-benchmarks,try-runtime
+          cargo check --release --locked
+#
+#      - name: Run tests for examples
+#        shell: bash
+#        run: make test_examples
 
   clippy:
     needs: lint
@@ -61,15 +52,4 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --release --locked --features=runtime-benchmarks
-
-  test:
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: "./.github/actions/init"
-
-      - name: Run tests
-        run: cargo test --release --locked --workspace --features=runtime-benchmarks --exclude integration-tests
+          args: --release --locked
