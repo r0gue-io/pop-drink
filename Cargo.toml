@@ -1,22 +1,22 @@
 [workspace]
-resolver = "2"
-members = [
-    "crates/ink-sandbox",
-    "crates/drink/drink",
-    "crates/drink/drink-cli",
-    "crates/drink/drink/test-macro",
-    "crates/pop-drink",
-]
 exclude = [
-    "crates/drink/examples",
+	"crates/drink/examples",
+	"crates/examples",
 ]
+members = [
+	"crates/drink/drink",
+	"crates/drink/drink-cli",
+	"crates/drink/drink/test-macro",
+	"crates/ink-sandbox",
+	"crates/pop-drink",
+]
+resolver = "2"
 
 [workspace.package]
 edition = "2021"
 repository = "https://github.com/r0gue-io/pop-drink"
 
 [workspace.dependencies]
-log = { version = "0.4.21", default-features = false }
 anyhow = { version = "1.0.71" }
 cargo_metadata = { version = "0.18.1" }
 clap = { version = "4.3.4" }
@@ -26,13 +26,14 @@ contract-transcode = { version = "4.0.0" }
 convert_case = { version = "0.6.0" }
 crossterm = { version = "0.26.0" }
 darling = { version = "0.20.3" }
+log = { version = "0.4.21", default-features = false }
 parity-scale-codec-derive = { version = "3.6.9" }
 paste = { version = "1.0.7" }
 proc-macro2 = { version = "1" }
 quote = { version = "1" }
 ratatui = { version = "0.21.0" }
 scale = { package = "parity-scale-codec", version = "3.6.9", default-features = false, features = [
-    "derive",
+	"derive",
 ] }
 scale-info = { version = "2.10.0" }
 serde_json = { version = "1.0" }
@@ -53,6 +54,7 @@ pop-runtime-devnet = { path = "../pop-node/runtime/devnet", default-features = f
 sp-core = { version = "34.0.0", default-features = false }
 sp-externalities = { version = "0.29.0", default-features = false }
 sp-io = { version = "37.0.0", default-features = false }
+sp-runtime = { version = "=38.0.0", default-features = false }
 sp-runtime-interface = { version = "28.0.0", default-features = false }
 
 # Local
