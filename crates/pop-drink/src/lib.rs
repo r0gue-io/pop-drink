@@ -2,6 +2,7 @@ pub use drink::*;
 pub use frame_support::{self, assert_ok, sp_runtime::DispatchError, traits::PalletInfoAccess};
 pub use ink_sandbox::api::assets_api::AssetsAPI;
 use ink_sandbox::{AccountIdFor, BalanceFor};
+use pop_api::v0::fungibles::PSP22Error;
 use scale::Decode;
 pub use session::{error::SessionError, ContractBundle, Session, NO_SALT};
 pub use sp_io::TestExternalities;
@@ -14,6 +15,7 @@ pub mod devnet {
 	pub use pop_runtime_devnet::{
 		config::api::versioning::V0Error, Assets, Balances, BuildStorage, Contracts, Runtime,
 	};
+	use scale::Encode;
 
 	// Types used in the pop runtime.
 	pub type Balance = BalanceFor<Runtime>;
@@ -31,46 +33,90 @@ pub mod devnet {
 		utils::account_id_from_slice(&account)
 	}
 
-	/// Runtime module error.
-	pub struct Error(pub DispatchError);
-	impl Into<u32> for Error {
+	pub struct RuntimeError(pub DispatchError);
+	impl Into<u32> for RuntimeError {
 		fn into(self) -> u32 {
 			V0Error::from(self.0).into()
 		}
 	}
 
+	impl Into<PSP22Error> for RuntimeError {
+		// Convert `RuntimeError` into `PSP22Error::Custom` error type.
+		fn into(self) -> PSP22Error {
+			let mut padded_vec = self.0.encode().to_vec();
+			padded_vec.resize(4, 0);
+			let array: [u8; 4] = padded_vec.try_into().map_err(|_| "Invalid length").unwrap();
+			let status_code = u32::from_le_bytes(array);
+			PSP22Error::Custom(status_code.to_string())
+		}
+	}
+
 	#[cfg(test)]
 	mod test {
-		use crate::devnet::{AssetsError, BalancesError, Error};
+		use crate::devnet::{AssetsError, BalancesError, RuntimeError};
 		use frame_support::sp_runtime::ArithmeticError;
-		use pop_api::primitives::{ArithmeticError::Overflow, Error as PopApiError};
+		use pop_api::{
+			fungibles::PSP22Error,
+			primitives::{ArithmeticError::Overflow, Error as PopApiError},
+		};
 
 		#[test]
-		fn module_error_conversion_works() {
+		fn runtime_error_to_primitives_error_conversion_works() {
 			vec![
-				(Error(ArithmeticError::Overflow.into()), PopApiError::Arithmetic(Overflow)),
+				(RuntimeError(ArithmeticError::Overflow.into()), PopApiError::Arithmetic(Overflow)),
 				(
-					Error(AssetsError::BalanceLow.into()),
+					RuntimeError(AssetsError::BalanceLow.into()),
 					PopApiError::Module { index: 52, error: [0, 0] },
 				),
 				(
-					Error(AssetsError::NoAccount.into()),
+					RuntimeError(AssetsError::NoAccount.into()),
 					PopApiError::Module { index: 52, error: [1, 0] },
 				),
 				(
-					Error(AssetsError::NoPermission.into()),
+					RuntimeError(AssetsError::NoPermission.into()),
 					PopApiError::Module { index: 52, error: [2, 0] },
 				),
 				(
-					Error(BalancesError::VestingBalance.into()),
+					RuntimeError(BalancesError::VestingBalance.into()),
 					PopApiError::Module { index: 10, error: [0, 0] },
 				),
 			]
 			.into_iter()
 			.for_each(|t| {
-				let module_error: u32 = t.0.into();
+				let runtime_error: u32 = t.0.into();
 				let pop_api_error: u32 = t.1.into();
-				assert_eq!(module_error, pop_api_error);
+				assert_eq!(runtime_error, pop_api_error);
+			});
+		}
+
+		#[test]
+		fn runtime_error_to_psp22_error_conversion_works() {
+			vec![
+				(
+					RuntimeError(ArithmeticError::Overflow.into()),
+					PSP22Error::Custom(String::from("264")),
+				),
+				(
+					RuntimeError(AssetsError::BalanceLow.into()),
+					PSP22Error::Custom(String::from("13315")),
+				),
+				(
+					RuntimeError(AssetsError::NoAccount.into()),
+					PSP22Error::Custom(String::from("78851")),
+				),
+				(
+					RuntimeError(AssetsError::NoPermission.into()),
+					PSP22Error::Custom(String::from("144387")),
+				),
+				(
+					RuntimeError(BalancesError::VestingBalance.into()),
+					PSP22Error::Custom(String::from("2563")),
+				),
+			]
+			.into_iter()
+			.for_each(|t| {
+				let runtime_error: PSP22Error = t.0.into();
+				assert_eq!(runtime_error, t.1);
 			});
 		}
 	}
