@@ -4666,6 +4666,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "ink_sandbox",
+ "pallet-api",
  "pallet-contracts",
  "parity-scale-codec",
  "pop-api",
