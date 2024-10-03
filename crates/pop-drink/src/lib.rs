@@ -1,5 +1,5 @@
 pub use drink::*;
-pub use ink_sandbox::api::{assets_api::AssetsAPI};
+pub use ink_sandbox::api::assets_api::AssetsAPI;
 pub use sp_io::TestExternalities;
 pub use frame_support::{self, sp_runtime::DispatchError, assert_ok};
 pub use session::{error::SessionError, ContractBundle, Session, NO_SALT};
