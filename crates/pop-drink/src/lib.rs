@@ -1,20 +1,19 @@
 pub use drink::*;
-pub use frame_support::{self, assert_ok, sp_runtime::DispatchError, traits::PalletInfoAccess};
+pub use frame_support::{self, assert_ok};
 pub use ink_sandbox::api::assets_api::AssetsAPI;
 use ink_sandbox::{AccountIdFor, BalanceFor};
-use scale::Decode;
+use scale::{Decode, Encode};
 pub use session::{error::SessionError, ContractBundle, Session, NO_SALT};
 pub use sp_io::TestExternalities;
+
+pub const DECODING_FAILED_ERROR: [u8; 4] = [11, 0, 0, 0];
 
 pub mod devnet {
 	use super::*;
 	pub use frame_support::sp_runtime::{
 		ArithmeticError, DispatchError, ModuleError, TokenError, TransactionalError,
 	};
-	pub use pop_runtime_devnet::{
-		config::api::versioning::V0Error, Assets, Balances, BuildStorage, Contracts, Runtime,
-	};
-	use scale::Encode;
+	pub use pop_runtime_devnet::{Assets, Balances, BuildStorage, Contracts, Runtime};
 
 	// Types used in the pop runtime.
 	pub type Balance = BalanceFor<Runtime>;
@@ -36,15 +35,34 @@ pub mod devnet {
 		Contracts(ContractsError),
 	}
 
-	impl Into<u32> for RuntimeError {
-		fn into(self) -> u32 {
-			let dispatch_error = match self {
+	impl From<RuntimeError> for u32 {
+		fn from(value: RuntimeError) -> Self {
+			use pop_primitives::Error;
+			let dispatch_error = match value {
 				RuntimeError::Raw(dispatch_error) => dispatch_error,
 				RuntimeError::Assets(error) => error.into(),
 				RuntimeError::Balances(error) => error.into(),
 				RuntimeError::Contracts(error) => error.into(),
 			};
-			V0Error::from(dispatch_error).into()
+			let primitive_error = match dispatch_error {
+				DispatchError::Module(error) => {
+					// Note: message not used
+					let ModuleError { index, error, message: _message } = error;
+					// Map `pallet-contracts::Error::DecodingFailed` to `Error::DecodingFailed`
+					if index as usize
+						== <Contracts as frame_support::traits::PalletInfoAccess>::index()
+						&& error == DECODING_FAILED_ERROR
+					{
+						Error::DecodingFailed
+					} else {
+						// Note: lossy conversion of error value due to returned contract status code
+						// size limitation
+						Error::Module { index, error: [error[0], error[1]] }
+					}
+				},
+				_ => dispatch_error.into(),
+			};
+			Error::from(primitive_error).into()
 		}
 	}
 
