@@ -1,5 +1,5 @@
 pub use drink::*;
-pub use ink_sandbox::api::{assets_api::AssetsAPI};
+pub use ink_sandbox::api::assets_api::AssetsAPI;
 pub use sp_io::TestExternalities;
 pub use frame_support::{self, sp_runtime::DispatchError, assert_ok};
 pub use session::{error::SessionError, ContractBundle, Session, NO_SALT};
@@ -10,12 +10,12 @@ pub mod devnet {
     use super::*;
     pub use pop_runtime_devnet::{BuildStorage, Runtime};
 
-    // Types used in the pop runtime.
+    /// Types used in the pop runtime.
     pub type Balance = BalanceFor<Runtime>;
     pub type AccountId = AccountIdFor<Runtime>;
 
-    // This is used to resolve type mismatches between the `AccountId` in the quasi testing
-    // environment and the contract environment.
+    /// This is used to resolve type mismatches between the `AccountId` in the quasi testing
+    /// environment and the contract environment.
     pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
         let account: [u8; 32] = s.clone().into();
         utils::account_id_from_slice(&account)
@@ -48,7 +48,7 @@ pub mod utils {
         Ok(result.unwrap())
     }
 
-    // Call a contract method and decode the returned data.
+    /// Call a contract method and decode the returned data.
     pub fn call<S, O, E>(
         session: &mut Session<S>,
         func_name: &str,
@@ -77,13 +77,13 @@ pub mod utils {
         }
     }
 
-    // This is used to resolve type mismatches between the `AccountId` in the quasi testing
-    // environment and the contract environment.
+    /// This is used to resolve type mismatches between the `AccountId` in the quasi testing
+    /// environment and the contract environment.
     pub fn account_id_from_slice(s: &[u8; 32]) -> pop_api::primitives::AccountId {
         pop_api::primitives::AccountId::decode(&mut &s[..]).expect("Should be decoded to AccountId")
     }
 
-    // Get the last event from pallet contracts.
+    /// Get the last event from pallet contracts.
     pub fn last_contract_event<S>(session: &Session<S>) -> Option<Vec<u8>>
         where
             S: Sandbox,
