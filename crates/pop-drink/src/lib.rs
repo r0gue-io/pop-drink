@@ -14,6 +14,7 @@ pub mod devnet {
 	pub use pop_runtime_devnet::{
 		config::api::versioning::V0Error, Assets, Balances, BuildStorage, Contracts, Runtime,
 	};
+	use scale::Encode;
 
 	// Types used in the pop runtime.
 	pub type Balance = BalanceFor<Runtime>;
@@ -24,20 +25,48 @@ pub mod devnet {
 	pub type BalancesError = pallet_balances::Error<Runtime>;
 	pub type ContractsError = pallet_contracts::Error<Runtime>;
 
+	#[derive(Encode, Decode, Debug)]
+	pub enum RuntimeError {
+		Raw(DispatchError),
+		#[codec(index = 52)]
+		Assets(AssetsError),
+		#[codec(index = 10)]
+		Balances(BalancesError),
+		#[codec(index = 40)]
+		Contracts(ContractsError),
+	}
+
+	impl Into<u32> for RuntimeError {
+		fn into(self) -> u32 {
+			let dispatch_error = match self {
+				RuntimeError::Raw(dispatch_error) => dispatch_error,
+				RuntimeError::Assets(error) => error.into(),
+				RuntimeError::Balances(error) => error.into(),
+				RuntimeError::Contracts(error) => error.into(),
+			};
+			V0Error::from(dispatch_error).into()
+		}
+	}
+
+	impl From<u32> for RuntimeError {
+		fn from(value: u32) -> Self {
+			let encoded = value.to_le_bytes();
+			match encoded {
+				[3, module_error @ ..] => {
+					RuntimeError::decode(&mut &module_error[..]).expect("Decoding failed")
+				},
+				_ => RuntimeError::Raw(
+					DispatchError::decode(&mut &encoded[..]).expect("Decoding failed"),
+				),
+			}
+		}
+	}
+
 	// This is used to resolve type mismatches between the `AccountId` in the quasi testing
 	// environment and the contract environment.
 	pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
 		let account: [u8; 32] = s.clone().into();
 		utils::account_id_from_slice(&account)
-	}
-
-	#[derive(Debug, PartialEq)]
-	pub struct RuntimeError(pub DispatchError);
-
-	impl Into<u32> for RuntimeError {
-		fn into(self) -> u32 {
-			V0Error::from(self.0).into()
-		}
 	}
 
 	#[cfg(test)]
@@ -49,33 +78,73 @@ pub mod devnet {
 		#[test]
 		fn runtime_error_to_primitives_error_conversion_works() {
 			vec![
-				(RuntimeError(ArithmeticError::Overflow.into()), PopApiError::Arithmetic(Overflow)),
 				(
-					RuntimeError(AssetsError::BalanceLow.into()),
+					RuntimeError::Raw(ArithmeticError::Overflow.into()),
+					PopApiError::Arithmetic(Overflow),
+				),
+				(
+					RuntimeError::Assets(AssetsError::BalanceLow),
 					PopApiError::Module { index: 52, error: [0, 0] },
 				),
 				(
-					RuntimeError(AssetsError::NoAccount.into()),
+					RuntimeError::Assets(AssetsError::NoAccount),
 					PopApiError::Module { index: 52, error: [1, 0] },
 				),
 				(
-					RuntimeError(AssetsError::NoPermission.into()),
+					RuntimeError::Assets(AssetsError::NoPermission),
 					PopApiError::Module { index: 52, error: [2, 0] },
 				),
 				(
-					RuntimeError(BalancesError::VestingBalance.into()),
+					RuntimeError::Balances(BalancesError::VestingBalance),
 					PopApiError::Module { index: 10, error: [0, 0] },
 				),
 			]
 			.into_iter()
 			.for_each(|t| {
-				println!("t");
 				let runtime_error: u32 = t.0.into();
 				let pop_api_error: u32 = t.1.into();
 				// `u32` assertion.
 				assert_eq!(runtime_error, pop_api_error);
 			});
 		}
+	}
+}
+
+pub mod error {
+	use crate::devnet::RuntimeError;
+
+	#[track_caller]
+	pub fn assert_runtime_err_inner<R, E: Into<u32>>(
+		result: Result<R, E>,
+		expected_error: RuntimeError,
+	) {
+		let expected_code: u32 = expected_error.into();
+		if let Err(error) = result {
+			let error_code: u32 = error.into();
+			if error_code != expected_code {
+				panic!(
+					r#"assertion `left == right` failed
+  left: {:?}
+ right: {:?}"#,
+					RuntimeError::from(error_code),
+					RuntimeError::from(expected_code),
+				);
+			}
+		} else {
+			panic!(
+				r#"assertion `left == right` failed
+  left: Ok()
+ right: {:?}"#,
+				RuntimeError::from(expected_code),
+			);
+		}
+	}
+
+	#[macro_export]
+	macro_rules! assert_runtime_err {
+		($result:expr, $error:expr $(,)?) => {
+			$crate::error::assert_runtime_err_inner($result, $error);
+		};
 	}
 }
 
