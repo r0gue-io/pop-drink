@@ -14,3 +14,4 @@ frame-support.workspace = true
 sp-io.workspace = true
 scale.workspace = true
 pop-api.workspace = true
+pop-primitives.workspace = true
