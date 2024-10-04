@@ -1,0 +1,23 @@
+[package]
+name = "drink-cli"
+authors = ["Cardinal"]
+edition = "2021"
+homepage = "https://github.com/Cardinal-Cryptography/drink"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/Cardinal-Cryptography/drink"
+version = "0.17.0"
+description = "A CLI for interacting with the `drink` environment"
+
+[dependencies]
+anyhow.workspace = true
+clap = { workspace = true, features = ["derive"] }
+crossterm.workspace = true
+contract-build.workspace = true
+contract-transcode.workspace = true
+ratatui = { workspace = true, features = ["all-widgets"]  }
+thiserror.workspace = true
+
+# Local
+ink_sandbox.workspace = true
+drink = { workspace = true, features = ["session"] }
