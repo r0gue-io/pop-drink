@@ -4667,11 +4667,15 @@ dependencies = [
  "frame-system",
  "ink_sandbox",
  "pallet-api",
+ "pallet-assets",
+ "pallet-balances",
  "pallet-contracts",
+ "pallet-timestamp",
  "parity-scale-codec",
  "pop-api",
  "pop-primitives",
  "pop-runtime-devnet",
+ "scale-info",
  "sp-io",
 ]
 
@@ -4681,7 +4685,6 @@ version = "0.0.0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
- "sp-runtime",
 ]
 
 [[package]]

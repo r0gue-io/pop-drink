@@ -4,9 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+scale-info = { workspace = true, default-features = false, features = [
+ "derive",
+] }
+
 drink.workspace = true
 ink_sandbox.workspace = true
-pallet-api.workspace = true
 pallet-contracts.workspace = true
 pop-runtime-devnet.workspace = true
 frame-system.workspace = true
@@ -14,4 +17,10 @@ frame-support.workspace = true
 sp-io.workspace = true
 scale.workspace = true
 pop-api.workspace = true
+
+[dev-dependencies]
+pallet-api.workspace = true
+pallet-assets.workspace = true
+pallet-balances.workspace = true
+pallet-timestamp.workspace = true
 pop-primitives.workspace = true
