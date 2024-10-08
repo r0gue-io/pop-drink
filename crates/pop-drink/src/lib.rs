@@ -37,7 +37,7 @@ pub mod devnet {
 				const MODULE_INDEX: u8 = 3;
 			}
 
-			/// Runtime error type used for testing smart contract methods using Pop API `v0`.
+			/// Runtime error for testing contracts using the Pop API V0.
 			pub type RuntimeError = crate::error::RuntimeError<Config>;
 		}
 	}
