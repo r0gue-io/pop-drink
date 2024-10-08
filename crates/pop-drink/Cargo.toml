@@ -17,10 +17,10 @@ frame-support.workspace = true
 sp-io.workspace = true
 scale.workspace = true
 pop-api.workspace = true
+pop-primitives.workspace = true
 
 [dev-dependencies]
 pallet-api.workspace = true
 pallet-assets.workspace = true
 pallet-balances.workspace = true
 pallet-timestamp.workspace = true
-pop-primitives.workspace = true

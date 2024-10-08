@@ -71,3 +71,7 @@ where
 {
 	session.record().last_event_batch().contract_events().last().cloned()
 }
+
+pub(crate) fn decode<T: Decode>(data: &[u8]) -> T {
+	T::decode(&mut &data[..]).expect("Decoding failed")
+}
