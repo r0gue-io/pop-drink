@@ -112,7 +112,7 @@ where
 ///
 /// /// Using macro to test the returned error.
 /// assert_err!(
-/// 	mint(&mut session, BOB, AMOUNT),
+/// 	transfer(&mut session, ALICE, AMOUNT),
 /// 	Error::Module(Assets(AssetNotLive))
 /// );
 /// ```
