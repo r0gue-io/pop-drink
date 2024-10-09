@@ -112,14 +112,14 @@ where
 	match session.call::<String, ()>(func_name, &input, endowment) {
 		// If the call is reverted, decode the error into the specified error type.
 		Err(SessionError::CallReverted(error)) => {
-			Err(E::decode(&mut &error[2..]).unwrap_or_else(|_| panic!("Decoding failed")))
+			Err(E::decode(&mut &error[2..]).expect("Decoding failed"))
 		},
 		// If the call is successful, decode the last returned value.
 		Ok(_) => Ok(session
 			.record()
 			.last_call_return_decoded::<O>()
-			.unwrap_or_else(|_| panic!("Expected a return value"))
-			.unwrap_or_else(|_| panic!("Decoding failed"))),
+			.expect("Expected a return value")
+			.expect("Decoding failed")),
 		// Catch-all for unexpected results.
 		_ => panic!("Expected call to revert or return a value"),
 	}
