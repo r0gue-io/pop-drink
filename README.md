@@ -32,7 +32,7 @@ drink = { version = "1.0.0",  package = "pop-drink" }
 
 ### 1. Setup a testing environment
 
-Import required methods and types:
+- Import required methods and types:
 
 ```rs
 use drink::{
@@ -41,7 +41,7 @@ use drink::{
 };
 ```
 
-Add the below code at the top of your contract test file to setup sandbox and contract bundle provider for the **Pop Network Devnet** runtime:
+- Add the below code at the top of your contract test file to setup sandbox and contract bundle provider for the **Pop Network Devnet** runtime:
 
 ```rs
 // Initialising useful variables for testing the contract.
@@ -79,13 +79,13 @@ drink::impl_sandbox!(Pop, Runtime, ALICE);
 
 ### 2. Deploy a new contract
 
-Import required methods and types:
+- Import required methods and types:
 
 ```rs
 use drink::{assert_ok, deploy};
 ```
 
-Instantiate and deploy a local contract with `new` constructor method:
+- Instantiate and deploy a local contract with `new` constructor method:
 
 ```rs
 let local_contract = BundleProvider::local().unwrap();
@@ -102,14 +102,18 @@ assert_ok!(deploy(
 
 ### 3. Test contract method that uses [Pop API](https://github.com/r0gue-io/pop-node/tree/main/pop-api)
 
-Import required methods and types:
+This example interacts with a [PSP22](https://github.com/w3f/PSPs/blob/master/PSPs/psp-22.md) example contract that uses [Pop API](https://github.com/r0gue-io/pop-node/tree/main/pop-api). The contract method returns [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22) which is provided by Pop API library.
+
+Learn more in the [PSP22 example contract](https://github.com/r0gue-io/pop-node/blob/main/pop-api/examples/fungibles/lib.rs).
+
+- Import required methods and types:
 
 ```rs
 use drink::{call, session::Session};
 use pop_api::v0::fungibles::PSP22Error;
 ```
 
-Example of interacting with the `transfer` method of the `Psp22` contract:
+- Example of interacting with the `transfer` method of the `Psp22` contract:
 
 ```rs
 // Example of a method to interact with contract via pop-drink.
@@ -128,6 +132,8 @@ fn transfer(session: &mut Session<Pop>, to: AccountId, amount: Balance) -> Resul
 
 #### If the contract throws a non-custom error:
 
+Non-custom errors are fixed variants of the provided [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22).
+
 ```rs
 // Not enough balance. Failed with `InsufficientBalance`.
 assert_eq!(
@@ -136,14 +142,17 @@ assert_eq!(
 );
 ```
 
-#### If the contract throws a custom error [`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33):
+#### If the contract throws a custom error:
 
-[`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33) encapsulates a `u32` value that indicates the success or failure of a runtime call via Pop API.
+A custom error is returned if the error doesn't conform to the [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22) standard.
+The custom error is represented by a [`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33), which encapsulates a `u32` value indicating the success or failure of a runtime call via the Pop API.
 
-Test the contract call with `drink::Error` and `drink::assert_err`:
+Pop DRink! provides an error type and a [macro](https://doc.rust-lang.org/book/ch19-06-macros.html) to simplify testing both runtime module errors and API errors.
 
-- `Error`: Runtime error for testing.
+- `drink::v0::Error`: Runtime error type for testing API V0.
 - `assert_err`: Asserts that a `Result` with an error type convertible to `u32` matches the expected `Error` from pop-drink.
+
+Test the contract call if a custom error is the runtime module error:
 
 ```rs
 use drink::{assert_err, v0::Error, Assets, AssetsError::NoAccount};
@@ -151,6 +160,17 @@ use drink::{assert_err, v0::Error, Assets, AssetsError::NoAccount};
 assert_err!(
  transfer(&mut session, ALICE, AMOUNT),
  Error::Module(Assets(NoAccount))
+);
+```
+
+Test the contract call if a custom error is the API error:
+
+```rs
+use drink::{assert_err, v0::{Error, Arithmetic, ArithmeticError::Overflow}};
+
+assert_err!(
+ transfer(&mut session, ALICE, AMOUNT),
+ Error::Api(Arithmetic(Overflow))
 );
 ```
 
