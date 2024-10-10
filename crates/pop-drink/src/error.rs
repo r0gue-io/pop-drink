@@ -14,21 +14,20 @@ fn decode<T: Decode>(data: &[u8]) -> T {
 
 /// Runtime error for testing.
 ///
-/// # Generic Parameters:
+/// # Generic Parameters
 ///
-/// - `ModuleError` - Error type of the runtime modules. Reference: https://paritytech.github.io/polkadot-sdk/master/solochain_template_runtime/enum.Error.html.
-/// - `ApiError` - Error type of the API, which depends on version.
-/// - `MODULE_INDEX` - Index of the variant `Error::Module`. This is based on the index of
-///   `ApiError::Module`
+/// - `ModuleError` - Error type of the runtime modules. [Reference](https://paritytech.github.io/polkadot-sdk/master/solochain_template_runtime/enum.Error.html).
+/// - `ApiError` - Error type of the API, which depends on version. [Reference](https://github.com/r0gue-io/pop-node/tree/main/pop-api).
+/// - `MODULE_INDEX` - Index of the variant `Error::Module`. This is based on the index of [`ApiError::Module`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L38).
 #[derive(Encode, Decode, Debug)]
 pub enum Error<ModuleError, ApiError, const MODULE_INDEX: u8>
 where
 	ModuleError: Decode + Encode + Debug,
 	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
 {
-	/// Module errors of the runtime.
+	/// Error type of the runtime modules. [Reference](https://paritytech.github.io/polkadot-sdk/master/solochain_template_runtime/enum.Error.html).
 	Module(ModuleError),
-	/// Every `ApiError`.
+	/// Every [`ApiError`](https://github.com/r0gue-io/pop-node/blob/52fb7f06a89955d462900e33d2b9c9170c4534a0/primitives/src/lib.rs#L30).
 	Api(ApiError),
 }
 
@@ -38,7 +37,7 @@ where
 	ModuleError: Decode + Encode + Debug,
 	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
 {
-	/// Converts a `Error` into a numerical value of `ApiError`.
+	/// Converts an `Error` into a numerical value of `ApiError`.
 	///
 	/// This conversion is necessary for comparing `Error` instances with other types.
 	// Compared types must implement `Into<u32>`, as `Error` does not implement `Eq`.
@@ -64,9 +63,9 @@ where
 	ModuleError: Decode + Encode + Debug,
 	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
 {
-	/// Converts a numerical value of `ApiError` into a `Error`.
+	/// Converts a numerical value of `ApiError` into an `Error`.
 	///
-	/// This is used to reconstruct and display a `Error` from its numerical representation
+	/// This is used to reconstruct and display an `Error` from its numerical representation
 	/// when an error is thrown.
 	fn from(value: u32) -> Self {
 		let error = ApiError::from(value);
@@ -80,16 +79,17 @@ where
 	}
 }
 
-/// A utility macro to assert that an error returned from a smart contract method using API
-/// V0.
+/// Asserts that a `Result` with an error type convertible to `u32` matches the expected `Error`
+/// from pop-drink.
 ///
-/// # Parameters:
+/// # Parameters
 ///
-/// - `result` - The result returned by a smart contract method. It is of type `Result<R, E>`, where
-///   the error type `E` must implement a conversion to `u32`.
-/// - `error` - A `Error` type configured specifically for the API V0.
+/// - `result` - The `Result<R, E>` from a smart contract method, where `E` must be convertible to
+///   `u32`.
+/// - `error` - The expected runtime specific `Error` to assert against the `E` error type from
+///   `result`.
 ///
-/// # Example:
+/// # Examples
 ///
 /// ```rs
 /// use drink::devnet::{
@@ -123,19 +123,21 @@ macro_rules! assert_err {
 	};
 }
 
-/// A utility macro to assert that an error returned from a smart contract method matches the
-/// `Error`.
+/// Asserts that a `Result` with an error type convertible to `u32` matches the expected `Error`
+/// from pop-drink.
 ///
-/// # Generic parameters:
+/// # Generic parameters
 ///
-/// - `R` - Success type returned if Ok().
-/// - `E` - Returned `Err()` value of a method result. Must be convertable to `u32`.
+/// - `R` - Type returned if `result` is `Ok()`.
+/// - `E` - Type returend if `result` is `Err()`. Must be convertible to `u32`.
 /// - `Error` - Runtime error type.
 ///
-/// # Parameters:
+/// # Parameters
 ///
-/// - `result` - Result returned by a smart contract method.
-/// - `expected_error` - `Error` to be asserted.
+/// - `result` - The `Result<R, E>` from a smart contract method, where `E` must be convertible to
+///   `u32`.
+/// - `expected_error` - The expected runtime specific `Error` to assert against the `E` error type
+///   from `result`.
 #[track_caller]
 pub fn assert_err_inner<R, E, Error>(result: Result<R, E>, expected_error: Error)
 where

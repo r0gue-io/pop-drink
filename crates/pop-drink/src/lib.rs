@@ -8,7 +8,7 @@ pub use sp_io::TestExternalities;
 
 pub mod error;
 #[cfg(test)]
-pub mod mock;
+mod mock;
 
 pub mod devnet {
 	pub use pop_runtime_devnet::Runtime;
@@ -43,23 +43,56 @@ pub mod devnet {
 	}
 }
 
-/// Deploys a contract with a given constructo methodr, arguments, salt and initial value. In case
-/// of success, returns the address of the deployed contract.
+/// Deploys a contract with a given constructor method, arguments, salt and an initial value. In
+/// case of success, returns the address of the deployed contract.
 ///
-/// # Generic Parameters:
+/// # Generic Parameters
 ///
-/// - `S`: Sandbox defines the API of a sandboxed runtime.
-/// - `E`: Decodable error type returned if the contract deployment fails.
+/// - `S` - [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
+///   environment for the Pop Network runtime.
+/// - `E` - Decodable error type returned if the contract deployment fails.
 ///
-/// # Parameters:
+/// # Parameters
 ///
-/// - `session` - Wrapper around `Sandbox`` that provides a convenient API for interacting with
-///   multiple contracts.
-/// - `bundle` - A struct representing the result of parsing a `.contract` bundle file.
-/// - `method` - The name of the constructor method.
+/// - `session` - Wrapper around [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
+///   that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
+/// - `bundle` - A struct representing the result of parsing a `.contract` bundle file. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session/bundle.rs).
+/// - `method` - The name of the contract constructor method. For trait methods, use
+///   `trait_name::method_name` (e.g., `Psp22::transfer`).
 /// - `input` - Arguments passed to the constructor method.
 /// - `salt` - Additional data used to influence the contract deployment address.
-/// - `init_value` - Initial funds allocated for the contract.
+/// - `init_value` - Initial funds allocated for the contract. Requires the contract method to be
+///   `payable`.
+///
+/// # Examples
+///
+/// ```rs
+/// /// The contract bundle provider.
+/// #[drink::contract_bundle_provider]
+/// enum BundleProvider {}
+///
+/// /// Sandbox environment for Pop Devnet Runtime.
+/// pub struct Pop {
+/// 	ext: TestExternalities,
+/// }
+///
+/// // Implement core functionalities for the `Pop` sandbox.
+/// drink::impl_sandbox!(Pop, Runtime, ALICE);
+///
+/// #[drink::test(sandbox = Pop)]
+/// fn test_constructor_works() {
+/// 	let local_contract = BundleProvider::local().unwrap();
+/// 	// Contract address is returned if a deployment succeeds.
+/// 	let contract = deploy(
+/// 		&mut session,
+/// 		local_contract,
+/// 		"new",
+/// 		vec![TOKEN.to_string(), MIN_BALANCE.to_string()],
+/// 		vec![],
+/// 		None
+/// 	).unwrap();
+/// }
+/// ```
 pub fn deploy<S, E>(
 	session: &mut Session<S>,
 	bundle: ContractBundle,
@@ -84,19 +117,50 @@ where
 
 /// Call a contract method and decode the returned data.
 ///
-/// # Generic Parameters:
+/// # Generic Parameters
 ///
-/// - `S` - Sandbox defines the API of a sandboxed runtime.
-/// - `O` - Decodable output type returned if the contract deployment succeeds.
-/// - `E` - Decodable error type returned if the contract deployment fails.
+/// - `S` - [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
+///   environment for the Pop Network runtime.
+/// - `O` - Decodable output type returned if the contract execution succeeds.
+/// - `E` - Decodable error type returned if the contract execution fails.
 ///
-/// # Parameters:
+/// # Parameters
 ///
-/// - `session` - Wrapper around `Sandbox`` that provides a convenient API for interacting with
-///   multiple contracts.
-/// - `func_name` - The name of the contract method.
+/// - `session` - Wrapper around [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
+///   that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
+/// - `func_name`: The name of the contract method. For trait methods, use `trait_name::method_name`
+///   (e.g., `Psp22::transfer`).
 /// - `input` - Arguments passed to the contract method.
-/// - `endowment` - Funds allocated for the contract execution.
+/// - `endowment` - Funds allocated for the contract execution. Requires the contract method to be
+///   `payable`.
+///
+/// # Examples
+///
+/// ```rs
+/// /// The contract bundle provider.
+/// #[drink::contract_bundle_provider]
+/// enum BundleProvider {}
+///
+/// /// Sandbox environment for Pop Devnet Runtime.
+/// pub struct Pop {
+/// 	ext: TestExternalities,
+/// }
+///
+/// // Implement core functionalities for the `Pop` sandbox.
+/// drink::impl_sandbox!(Pop, Runtime, ALICE);
+///
+/// /// Call to a contract method `Psp22::transfer` and return error `PSP22Error` if fails.
+/// fn transfer(session: &mut Session<Pop>, to: AccountId, amount: Balance) -> Result<(), PSP22Error> {
+/// 	// Convert empty array into string.
+/// 	let empty_array = serde_json::to_string::<[u8; 0]>(&[]).unwrap();
+/// 	call::<Pop, (), PSP22Error>(
+/// 		session,
+/// 		"Psp22::transfer",
+/// 		vec![to.to_string(), amount.to_string(), empty_array],
+/// 		None,
+/// 	)
+/// }
+/// ```
 pub fn call<S, O, E>(
 	session: &mut Session<S>,
 	func_name: &str,
@@ -111,9 +175,8 @@ where
 {
 	match session.call::<String, ()>(func_name, &input, endowment) {
 		// If the call is reverted, decode the error into the specified error type.
-		Err(SessionError::CallReverted(error)) => {
-			Err(E::decode(&mut &error[2..]).expect("Decoding failed"))
-		},
+		Err(SessionError::CallReverted(error)) =>
+			Err(E::decode(&mut &error[2..]).expect("Decoding failed")),
 		// If the call is successful, decode the last returned value.
 		Ok(_) => Ok(session
 			.record()
@@ -131,14 +194,32 @@ fn account_id_from_slice(s: &[u8; 32]) -> pop_api::primitives::AccountId {
 
 /// Get the last event from pallet contracts.
 ///
-/// # Generic Parameters:
+/// # Generic Parameters
 ///
-/// - `S` - Sandbox defines the API of a sandboxed runtime.
+/// - `S` - [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
+///   environment for the Pop Network runtime.
 ///
-/// # Parameters:
+/// # Parameters
 ///
-/// - `session` - Wrapper around `Sandbox`` that provides a convenient API for interacting with
-///   multiple contracts.
+/// - `session` - Wrapper around [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
+///   that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
+///
+/// # Examples
+///
+/// ```rs
+/// use drink::{assert_ok, devnet::account_id_from_slice, last_contract_event};
+///
+/// assert_eq!(
+/// 	last_contract_event(&session).unwrap(),
+/// 	Transfer {
+/// 		from: Some(account_id_from_slice(&ALICE)),
+/// 		to: Some(account_id_from_slice(&BOB)),
+/// 		value,
+/// 	}
+/// 	.encode()
+/// 	.as_slice()
+/// );
+/// ```
 pub fn last_contract_event<S>(session: &Session<S>) -> Option<Vec<u8>>
 where
 	S: Sandbox,
