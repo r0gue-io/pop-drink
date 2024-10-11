@@ -12,13 +12,65 @@ fn decode<T: Decode>(data: &[u8]) -> T {
 	T::decode(&mut &data[..]).expect("Decoding failed")
 }
 
-/// Runtime error for testing.
+/// Runtime error for efficiently testing both runtime module errors and API errors.
+/// It is designed for use with the `assert_err!` macro.
 ///
 /// # Generic Parameters
 ///
 /// - `ModuleError` - Error type of the runtime modules. [Reference](https://paritytech.github.io/polkadot-sdk/master/solochain_template_runtime/enum.Error.html).
 /// - `ApiError` - Error type of the API, which depends on version. [Reference](https://github.com/r0gue-io/pop-node/tree/main/pop-api).
 /// - `MODULE_INDEX` - Index of the variant `Error::Module`. This is based on the index of [`ApiError::Module`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L38).
+///
+/// # Examples
+///
+/// ### Runtime module errors
+///
+/// - Import types to construct runtime module errors:
+///
+/// ```rs
+/// use drink::devnet::{
+/// 	Assets,
+/// 	AssetsError::AssetNotLive,
+/// 	Balances::BelowMinimum,
+/// 	BalancesError::BelowMinimum
+/// };
+/// ```
+///
+/// - Construct a runtime module error [`Assets(AssetNotLive)`](https://paritytech.github.io/polkadot-sdk/master/pallet_assets/pallet/enum.Error.html#variant.AssetNotLive):
+///
+/// ```rs
+/// Error::Module(Assets(AssetNotLive))
+/// ```
+///
+/// - Construct a runtime module error [`Balances(InsufficientBalance)`](https://docs.rs/pallet-balances/latest/pallet_balances/pallet/enum.Error.html#variant.InsufficientBalance):
+///
+/// ```rs
+/// Error::Module(Balances(InsufficientBalance))
+/// ```
+///
+/// ### API errors
+///
+/// - Import types to construct API errors:
+///
+/// ```rs
+/// use drink::devnet::v0::{
+/// 	Arithmetic,
+/// 	ArithmeticError::Overflow,
+/// 	BadOrigin
+/// };
+/// ```
+///
+/// - API error [`Arithmetic(Overflow)`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L55):
+///
+/// ```rs
+/// Error::Api(Arithmetic(Overflow))
+/// ```
+///
+/// - API error [`BadOrigin`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L36C4-L36C18):
+///
+/// ```rs
+/// Error::Api(BadOrigin)
+/// ```
 #[derive(Encode, Decode, Debug)]
 pub enum Error<ModuleError, ApiError, const MODULE_INDEX: u8>
 where
@@ -91,16 +143,41 @@ where
 ///
 /// # Examples
 ///
+/// The below example interacts with a [PSP22](https://github.com/w3f/PSPs/blob/master/PSPs/psp-22.md) contract that uses [Pop API](https://github.com/r0gue-io/pop-node/tree/main/pop-api). The contract method returns [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22) which is provided by Pop API library.
+/// Learn more in the [PSP22 example contract](https://github.com/r0gue-io/pop-node/blob/main/pop-api/examples/fungibles/lib.rs).
+///
+/// The macro is used to test a customer error which is returned by the API if the error doesn't conform to the [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22) standard.
+/// The custom error is represented by a [`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33), which encapsulates a `u32` value indicating the success or failure of a runtime call via the Pop API.
+///
+/// Pop DRink! provides an error type and a [macro](https://doc.rust-lang.org/book/ch19-06-macros.html) to simplify testing both runtime module errors and API errors.
+///
+/// - `Error`: Runtime error for efficiently testing both runtime module errors and API errors.
+/// - `assert_err`: Asserts that a `Result` with an error type convertible to `u32` matches the
+///   expected `Error` from pop-drink.
+///
+/// Note: `PSP22Error` is used here only as an example. The test suite utility library provided by
+/// Pop DRink! is not limited to a single specific error type.
+///
 /// ```rs
-/// use drink::devnet::{
-/// 	error::{
-/// 		v0::{assert_err, Error},
-/// 		Assets,
-/// 		AssetsError::AssetNotLive,
-/// 	}
+/// // Required imports to test the custom error.
+/// use drink::{
+/// 	assert_err,
+/// 	devnet::{
+/// 		error::{
+/// 			v0::Error,
+/// 			Assets,
+/// 			AssetsError::AssetNotLive,
+/// 		},
+/// 	},
 /// };
 ///
-/// /// Example `pop-drink` testing method to interact with PSP22 contract.
+/// // `PSP22Error` is provided by the API library.
+/// use pop_api::v0::fungibles::PSP22Error;
+/// ```
+///
+/// - Example `pop-drink` testing method to interact with PSP22 contract.
+///
+/// ```rs
 /// fn transfer(session: &mut Session<Pop>, to: AccountId, amount: Balance) -> Result<(), PSP22Error> {
 /// 	call::<Pop, (), PSP22Error>(
 /// 		session,
@@ -109,8 +186,11 @@ where
 /// 		None,
 /// 	)
 /// }
+/// ```
 ///
-/// /// Using macro to test the returned error.
+/// - Using macro to test the returned error.
+///
+/// ```rs
 /// assert_err!(
 /// 	transfer(&mut session, ALICE, AMOUNT),
 /// 	Error::Module(Assets(AssetNotLive))
