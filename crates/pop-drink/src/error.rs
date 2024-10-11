@@ -134,6 +134,14 @@ where
 /// Asserts that a `Result` with an error type convertible to `u32` matches the expected `Error`
 /// from pop-drink.
 ///
+/// The macro is used to test a custom error which is returned by the API if the error doesn't conform to the provided API error (e.g., [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22)). The custom error is represented by a [`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33), which encapsulates a `u32` value indicating the success or failure of a runtime call via the Pop API.
+///
+/// Pop DRink! provides an error type and a [macro](https://doc.rust-lang.org/book/ch19-06-macros.html) to simplify testing both runtime module errors and API errors.
+///
+/// - `Error`: Runtime error for efficiently testing both runtime module errors and API errors.
+/// - `assert_err`: Asserts that a `Result` with an error type convertible to `u32` matches the
+///   expected `Error` from pop-drink.
+///
 /// # Parameters
 ///
 /// - `result` - The `Result<R, E>` from a smart contract method, where `E` must be convertible to
@@ -143,17 +151,7 @@ where
 ///
 /// # Examples
 ///
-/// The below example interacts with a [PSP22](https://github.com/w3f/PSPs/blob/master/PSPs/psp-22.md) contract that uses [Pop API](https://github.com/r0gue-io/pop-node/tree/main/pop-api). The contract method returns [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22) which is provided by Pop API library.
-/// Learn more in the [PSP22 example contract](https://github.com/r0gue-io/pop-node/blob/main/pop-api/examples/fungibles/lib.rs).
-///
-/// The macro is used to test a customer error which is returned by the API if the error doesn't conform to the [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22) standard.
-/// The custom error is represented by a [`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33), which encapsulates a `u32` value indicating the success or failure of a runtime call via the Pop API.
-///
-/// Pop DRink! provides an error type and a [macro](https://doc.rust-lang.org/book/ch19-06-macros.html) to simplify testing both runtime module errors and API errors.
-///
-/// - `Error`: Runtime error for efficiently testing both runtime module errors and API errors.
-/// - `assert_err`: Asserts that a `Result` with an error type convertible to `u32` matches the
-///   expected `Error` from pop-drink.
+/// The below example interacts with a [PSP22](https://github.com/w3f/PSPs/blob/master/PSPs/psp-22.md) contract that uses [Pop API](https://github.com/r0gue-io/pop-node/tree/main/pop-api). The contract method returns the API error [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22) which is provided by Pop API library. Learn more in the [PSP22 example contract](https://github.com/r0gue-io/pop-node/blob/main/pop-api/examples/fungibles/lib.rs).
 ///
 /// Note: `PSP22Error` is used here only as an example. The test suite utility library provided by
 /// Pop DRink! is not limited to a single specific error type.
