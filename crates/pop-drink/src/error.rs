@@ -12,6 +12,79 @@ fn decode<T: Decode>(data: &[u8]) -> T {
 	T::decode(&mut &data[..]).expect("Decoding failed")
 }
 
+/// Asserts a custom error type against the `Error`. This is useful when you want to check if a contract's custom error (e.g., [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22)) matches the error code returned by the runtime, which is represented by a [`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33). The error type must be convertible to a `u32`.
+///
+/// # Parameters
+///
+/// - `result` - Contract method's result returns the custom error type which is convertible to
+///   `u32`.
+/// - `error` - `Error` to assert against the custom error type.
+///
+/// # Examples
+///
+/// To assert the `StatusCode` returned by a contract method that uses Pop API, you simply use the provided `assert_err!` macro.
+///
+/// ```rs
+/// // Required imports to test the custom error.
+/// use drink::{ assert_err, devnet::error::{ v0::Error, Arithmetic, ArithmeticError::Overflow }};
+///
+/// // Call a contract method named "hello_world" that returns `StatusCode`.
+/// let result = call::<Pop, (), StatusCode>(session, "hello_world", vec![], None);
+///
+/// // Using macro to test the returned error.
+/// assert_err!(result, Error::Api(Arithmetic(Overflow)));
+/// ```
+#[macro_export]
+macro_rules! assert_err {
+	($result:expr, $error:expr $(,)?) => {
+		$crate::error::assert_err_inner::<_, _, _>($result, $error);
+	};
+}
+
+/// Asserts an error type to Error. This can be used for custom error types used by a contract which
+/// uses the [`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33) returned by the pop runtime. The error type must be convertible to a `u32`.
+///
+/// # Generic parameters
+///
+/// - `R` - Type returned if `result` is `Ok()`.
+/// - `E` - Type returend if `result` is `Err()`. Must be convertible to `u32`.
+/// - `Error` - Runtime error type.
+///
+/// # Parameters
+///
+/// - `result` - The `Result<R, E>` from a smart contract method, where `E` must be convertible to
+///   `u32`.
+/// - `expected_error` - The expected runtime specific `Error` to assert against the `E` error type
+///   from `result`.
+#[track_caller]
+pub fn assert_err_inner<R, E, Error>(result: Result<R, E>, expected_error: Error)
+where
+	E: Into<u32>,
+	Error: From<u32> + Into<u32> + Debug,
+{
+	let expected_code: u32 = expected_error.into();
+	let expected_error = Error::from(expected_code);
+	if let Err(error) = result {
+		let error_code: u32 = error.into();
+		if error_code != expected_code {
+			panic!(
+				r#"assertion `left == right` failed
+  left: {:?}
+ right: {:?}"#,
+				Error::from(error_code),
+				expected_error
+			);
+		}
+	} else {
+		panic!(
+			r#"assertion `left == right` failed
+  left: Ok()
+ right: {:?}"#,
+			expected_error
+		);
+	}
+}
+
 /// Runtime error for efficiently testing both runtime module errors and API errors.
 /// It is designed for use with the `assert_err!` macro.
 ///
@@ -128,120 +201,6 @@ where
 			return Error::Module(decode(&data));
 		}
 		Error::Api(error)
-	}
-}
-
-/// Asserts that a `Result` with an error type convertible to `u32` matches the expected `Error`
-/// from pop-drink.
-///
-/// The macro is used to test a custom error which is returned by the API if the error doesn't conform to the provided API error (e.g., [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22)). The custom error is represented by a [`StatusCode`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/lib.rs#L33), which encapsulates a `u32` value indicating the success or failure of a runtime call via the Pop API.
-///
-/// Pop DRink! provides an error type and a [macro](https://doc.rust-lang.org/book/ch19-06-macros.html) to simplify testing both runtime module errors and API errors.
-///
-/// - `Error`: Runtime error for efficiently testing both runtime module errors and API errors.
-/// - `assert_err`: Asserts that a `Result` with an error type convertible to `u32` matches the
-///   expected `Error` from pop-drink.
-///
-/// # Parameters
-///
-/// - `result` - The `Result<R, E>` from a smart contract method, where `E` must be convertible to
-///   `u32`.
-/// - `error` - The expected runtime specific `Error` to assert against the `E` error type from
-///   `result`.
-///
-/// # Examples
-///
-/// The below example interacts with a [PSP22](https://github.com/w3f/PSPs/blob/master/PSPs/psp-22.md) contract that uses [Pop API](https://github.com/r0gue-io/pop-node/tree/main/pop-api). The contract method returns the API error [`PSP22Error`](https://github.com/r0gue-io/pop-node/blob/main/pop-api/src/v0/fungibles/errors.rs#L73C1-L73C22) which is provided by Pop API library. Learn more in the [PSP22 example contract](https://github.com/r0gue-io/pop-node/blob/main/pop-api/examples/fungibles/lib.rs).
-///
-/// Note: `PSP22Error` is used here only as an example. The test suite utility library provided by
-/// Pop DRink! is not limited to a single specific error type.
-///
-/// ```rs
-/// // Required imports to test the custom error.
-/// use drink::{
-/// 	assert_err,
-/// 	devnet::{
-/// 		error::{
-/// 			v0::Error,
-/// 			Assets,
-/// 			AssetsError::AssetNotLive,
-/// 		},
-/// 	},
-/// };
-///
-/// // `PSP22Error` is provided by the API library.
-/// use pop_api::v0::fungibles::PSP22Error;
-/// ```
-///
-/// - Example `pop-drink` testing method to interact with PSP22 contract.
-///
-/// ```rs
-/// fn transfer(session: &mut Session<Pop>, to: AccountId, amount: Balance) -> Result<(), PSP22Error> {
-/// 	call::<Pop, (), PSP22Error>(
-/// 		session,
-/// 		"Psp22::transfer",
-/// 		vec![to.to_string(), amount.to_string(), serde_json::to_string::<[u8; 0]>(&[]).unwrap()],
-/// 		None,
-/// 	)
-/// }
-/// ```
-///
-/// - Using macro to test the returned error.
-///
-/// ```rs
-/// assert_err!(
-/// 	transfer(&mut session, ALICE, AMOUNT),
-/// 	Error::Module(Assets(AssetNotLive))
-/// );
-/// ```
-#[macro_export]
-macro_rules! assert_err {
-	($result:expr, $error:expr $(,)?) => {
-		$crate::error::assert_err_inner::<_, _, _>($result, $error);
-	};
-}
-
-/// Asserts that a `Result` with an error type convertible to `u32` matches the expected `Error`
-/// from pop-drink.
-///
-/// # Generic parameters
-///
-/// - `R` - Type returned if `result` is `Ok()`.
-/// - `E` - Type returend if `result` is `Err()`. Must be convertible to `u32`.
-/// - `Error` - Runtime error type.
-///
-/// # Parameters
-///
-/// - `result` - The `Result<R, E>` from a smart contract method, where `E` must be convertible to
-///   `u32`.
-/// - `expected_error` - The expected runtime specific `Error` to assert against the `E` error type
-///   from `result`.
-#[track_caller]
-pub fn assert_err_inner<R, E, Error>(result: Result<R, E>, expected_error: Error)
-where
-	E: Into<u32>,
-	Error: From<u32> + Into<u32> + Debug,
-{
-	let expected_code: u32 = expected_error.into();
-	let expected_error = Error::from(expected_code);
-	if let Err(error) = result {
-		let error_code: u32 = error.into();
-		if error_code != expected_code {
-			panic!(
-				r#"assertion `left == right` failed
-  left: {:?}
- right: {:?}"#,
-				Error::from(error_code),
-				expected_error
-			);
-		}
-	} else {
-		panic!(
-			r#"assertion `left == right` failed
-  left: Ok()
- right: {:?}"#,
-			expected_error
-		);
 	}
 }
 

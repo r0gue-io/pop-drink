@@ -54,8 +54,7 @@ pub mod devnet {
 ///
 /// # Parameters
 ///
-/// - `session` - Wrapper around [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
-///   that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
+/// - `session` - Wrapper around Sandbox that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
 /// - `bundle` - A struct representing the result of parsing a `.contract` bundle file. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session/bundle.rs).
 /// - `method` - The name of the contract constructor method. For trait methods, use
 ///   `trait_name::method_name` (e.g., `Psp22::transfer`).
@@ -126,8 +125,7 @@ where
 ///
 /// # Parameters
 ///
-/// - `session` - Wrapper around [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
-///   that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
+/// - `session` - Wrapper around Sandbox that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
 /// - `func_name`: The name of the contract method. For trait methods, use `trait_name::method_name`
 ///   (e.g., `Psp22::transfer`).
 /// - `input` - Arguments passed to the contract method.
@@ -201,8 +199,7 @@ fn account_id_from_slice(s: &[u8; 32]) -> pop_api::primitives::AccountId {
 ///
 /// # Parameters
 ///
-/// - `session` - Wrapper around [`Sandbox`](https://github.com/r0gue-io/pop-drink/blob/main/crates/ink-sandbox/src/lib.rs)
-///   that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
+/// - `session` - Wrapper around Sandbox that provides methods to interact with multiple contracts. [Reference](https://github.com/r0gue-io/pop-drink/blob/main/crates/drink/drink/src/session.rs).
 ///
 /// # Examples
 ///
