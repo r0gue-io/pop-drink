@@ -47,15 +47,14 @@ macro_rules! assert_err {
 /// # Generic parameters
 ///
 /// - `R` - Type returned if `result` is `Ok()`.
-/// - `E` - Type returend if `result` is `Err()`. Must be convertible to `u32`.
-/// - `Error` - Runtime error type.
+/// - `E` - Type returned if `result` is `Err()`. Must be convertible to `u32`.
+/// - `Error` - `Error` to assert against the custom error type.
 ///
 /// # Parameters
 ///
-/// - `result` - The `Result<R, E>` from a smart contract method, where `E` must be convertible to
+/// - `result` - Contract method's result returns the custom error type which is convertible to
 ///   `u32`.
-/// - `expected_error` - The expected runtime specific `Error` to assert against the `E` error type
-///   from `result`.
+/// - `expected_error` - `Error` to assert against the custom error type.
 #[track_caller]
 pub fn assert_err_inner<R, E, Error>(result: Result<R, E>, expected_error: Error)
 where
