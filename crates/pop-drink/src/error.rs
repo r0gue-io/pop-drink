@@ -22,17 +22,18 @@ fn decode<T: Decode>(data: &[u8]) -> T {
 ///
 /// # Examples
 ///
-/// To assert the `StatusCode` returned by a contract method that uses Pop API, you simply use the provided `assert_err!` macro.
+/// To assert the `StatusCode` returned by a contract method that uses Pop API, you simply use the
+/// provided `assert_err!` macro.
 ///
 /// ```rs
 /// // Required imports to test the custom error.
 /// use drink::{ assert_err, devnet::error::{ v0::Error, Arithmetic, ArithmeticError::Overflow }};
 ///
-/// // Call a contract method named "hello_world" that returns `StatusCode`.
+/// // Call a contract method named "hello_world" that throws `StatusCode`.
 /// let result = call::<Pop, (), StatusCode>(session, "hello_world", vec![], None);
 ///
-/// // Using macro to test the returned error.
-/// assert_err!(result, Error::Api(Arithmetic(Overflow)));
+/// // Asserts that the call fails because of an arithmetic operation error.
+/// assert_err!(result, Error::Raw(Arithmetic(Overflow)));
 /// ```
 #[macro_export]
 macro_rules! assert_err {
@@ -84,16 +85,42 @@ where
 	}
 }
 
-/// Runtime error for efficiently testing both runtime module errors and API errors.
-/// It is designed for use with the `assert_err!` macro.
+/// Error type for testing why a runtime call fails.
 ///
 /// # Generic Parameters
 ///
-/// - `ModuleError` - Error type of the runtime modules. [Reference](https://paritytech.github.io/polkadot-sdk/master/solochain_template_runtime/enum.Error.html).
-/// - `ApiError` - Error type of the API, which depends on version. [Reference](https://github.com/r0gue-io/pop-node/tree/main/pop-api).
-/// - `MODULE_INDEX` - Index of the variant `Error::Module`. This is based on the index of [`ApiError::Module`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L38).
+/// - [`RuntimeCallError`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L30)
+///   - Reason why a runtime call fails. (.e.g, arithmetic operation errors)
+/// - [`ModuleError`](https://paritytech.github.io/polkadot-sdk/master/solochain_template_runtime/enum.Error.html)
+///   - Refers to specific reasons a runtime call fails, originating from the runtime modules.
+/// - [`MODULE_INDEX`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L38)
+/// 		- Index of the variant `Error::Module`.
 ///
 /// # Examples
+///
+/// ### Runtime call errors
+///
+/// - Import types to construct runtime call errors:
+///
+/// ```rs
+/// use drink::devnet::v0::{
+/// 	Arithmetic,
+/// 	ArithmeticError::Overflow,
+/// 	BadOrigin
+/// };
+/// ```
+///
+/// - Runtime call error [`Arithmetic(Overflow)`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L55):
+///
+/// ```rs
+/// Error::Raw(Arithmetic(Overflow))
+/// ```
+///
+/// - Runtime call error [`BadOrigin`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L36C4-L36C18):
+///
+/// ```rs
+/// Error::Raw(BadOrigin)
+/// ```
 ///
 /// ### Runtime module errors
 ///
@@ -119,120 +146,116 @@ where
 /// ```rs
 /// Error::Module(Balances(InsufficientBalance))
 /// ```
-///
-/// ### API errors
-///
-/// - Import types to construct API errors:
-///
-/// ```rs
-/// use drink::devnet::v0::{
-/// 	Arithmetic,
-/// 	ArithmeticError::Overflow,
-/// 	BadOrigin
-/// };
-/// ```
-///
-/// - API error [`Arithmetic(Overflow)`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L55):
-///
-/// ```rs
-/// Error::Api(Arithmetic(Overflow))
-/// ```
-///
-/// - API error [`BadOrigin`](https://github.com/r0gue-io/pop-node/blob/main/primitives/src/lib.rs#L36C4-L36C18):
-///
-/// ```rs
-/// Error::Api(BadOrigin)
-/// ```
+
 #[derive(Encode, Decode, Debug)]
-pub enum Error<ModuleError, ApiError, const MODULE_INDEX: u8>
+pub enum Error<ModuleError, RuntimeCallError, const MODULE_INDEX: u8>
 where
+	RuntimeCallError: Decode + Encode + Debug + From<u32> + Into<u32>,
 	ModuleError: Decode + Encode + Debug,
-	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
 {
-	/// Error type of the runtime modules. [Reference](https://paritytech.github.io/polkadot-sdk/master/solochain_template_runtime/enum.Error.html).
+	/// Reason why a runtime call fails. [Reference](https://github.com/r0gue-io/pop-node/blob/52fb7f06a89955d462900e33d2b9c9170c4534a0/primitives/src/lib.rs#L30).
+	Raw(RuntimeCallError),
+	/// [Module error](https://paritytech.github.io/polkadot-sdk/master/solochain_template_runtime/enum.Error.html) refers to specific reasons a runtime call fails, originating from the runtime modules.
 	Module(ModuleError),
-	/// Every [`ApiError`](https://github.com/r0gue-io/pop-node/blob/52fb7f06a89955d462900e33d2b9c9170c4534a0/primitives/src/lib.rs#L30).
-	Api(ApiError),
 }
 
-impl<ModuleError, ApiError, const MODULE_INDEX: u8> From<Error<ModuleError, ApiError, MODULE_INDEX>>
-	for u32
+impl<ModuleError, RuntimeCallError, const MODULE_INDEX: u8>
+	From<Error<ModuleError, RuntimeCallError, MODULE_INDEX>> for u32
 where
+	RuntimeCallError: Decode + Encode + Debug + From<u32> + Into<u32>,
 	ModuleError: Decode + Encode + Debug,
-	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
 {
-	/// Converts an `Error` into a numerical value of `ApiError`.
+	/// Converts an `Error` to a `u32` number.
 	///
 	/// This conversion is necessary for comparing `Error` instances with other types.
 	// Compared types must implement `Into<u32>`, as `Error` does not implement `Eq`.
 	// Use this function to obtain a numerical representation of the error for comparison or
 	// further processing.
-	fn from(error: Error<ModuleError, ApiError, MODULE_INDEX>) -> Self {
+	fn from(error: Error<ModuleError, RuntimeCallError, MODULE_INDEX>) -> Self {
 		match error {
+			Error::Raw(error) => decode::<RuntimeCallError>(&error.encode()),
 			Error::Module(error) => {
 				let mut encoded = error.encode();
 				encoded.insert(0, MODULE_INDEX);
 				encoded.resize(4, 0);
-				decode::<ApiError>(&encoded)
+				decode::<RuntimeCallError>(&encoded)
 			},
-			Error::Api(error) => decode::<ApiError>(&error.encode()),
 		}
 		.into()
 	}
 }
 
-impl<ModuleError, ApiError, const MODULE_INDEX: u8> From<u32>
-	for Error<ModuleError, ApiError, MODULE_INDEX>
+impl<ModuleError, RuntimeCallError, const MODULE_INDEX: u8> From<u32>
+	for Error<ModuleError, RuntimeCallError, MODULE_INDEX>
 where
+	RuntimeCallError: Decode + Encode + Debug + From<u32> + Into<u32>,
 	ModuleError: Decode + Encode + Debug,
-	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
 {
-	/// Converts a numerical value of `ApiError` into an `Error`.
+	/// Converts a numerical value `u32` into an `Error`.
 	///
 	/// This is used to reconstruct and display an `Error` from its numerical representation
 	/// when an error is thrown.
 	fn from(value: u32) -> Self {
-		let error = ApiError::from(value);
+		let error = RuntimeCallError::from(value);
 		let encoded = error.encode();
 		if encoded[0] == MODULE_INDEX {
 			let (index, module_error) = (encoded[1], &encoded[2..]);
 			let data = vec![vec![index], module_error.to_vec()].concat();
 			return Error::Module(decode(&data));
 		}
-		Error::Api(error)
+		Error::Raw(error)
 	}
 }
 
 #[cfg(test)]
 mod test {
-	use pop_api::primitives::v0::Error as ApiError;
+	use pop_api::primitives::v0::Error as RuntimeCallError;
 
 	use crate::error::{AssetsError::*, BalancesError::*, *};
 
-	fn test_cases() -> Vec<(Error<crate::mock::RuntimeError, ApiError, 3>, ApiError)> {
+	fn test_cases() -> Vec<(Error<crate::mock::RuntimeError, RuntimeCallError, 3>, RuntimeCallError)>
+	{
 		use frame_support::traits::PalletInfoAccess;
 		use pop_api::primitives::{ArithmeticError::*, TokenError::*};
 
 		use crate::mock::RuntimeError::*;
 		vec![
-			(Error::Api(ApiError::BadOrigin), ApiError::BadOrigin),
-			(Error::Api(ApiError::Token(BelowMinimum)), ApiError::Token(BelowMinimum)),
-			(Error::Api(ApiError::Arithmetic(Overflow)), ApiError::Arithmetic(Overflow)),
+			(Error::Raw(RuntimeCallError::BadOrigin), RuntimeCallError::BadOrigin),
+			(
+				Error::Raw(RuntimeCallError::Token(BelowMinimum)),
+				RuntimeCallError::Token(BelowMinimum),
+			),
+			(
+				Error::Raw(RuntimeCallError::Arithmetic(Overflow)),
+				RuntimeCallError::Arithmetic(Overflow),
+			),
 			(
 				Error::Module(Assets(BalanceLow)),
-				ApiError::Module { index: crate::mock::Assets::index() as u8, error: [0, 0] },
+				RuntimeCallError::Module {
+					index: crate::mock::Assets::index() as u8,
+					error: [0, 0],
+				},
 			),
 			(
 				Error::Module(Assets(NoAccount)),
-				ApiError::Module { index: crate::mock::Assets::index() as u8, error: [1, 0] },
+				RuntimeCallError::Module {
+					index: crate::mock::Assets::index() as u8,
+					error: [1, 0],
+				},
 			),
 			(
 				Error::Module(Balances(VestingBalance)),
-				ApiError::Module { index: crate::mock::Balances::index() as u8, error: [0, 0] },
+				RuntimeCallError::Module {
+					index: crate::mock::Balances::index() as u8,
+					error: [0, 0],
+				},
 			),
 			(
 				Error::Module(Balances(LiquidityRestrictions)),
-				ApiError::Module { index: crate::mock::Balances::index() as u8, error: [1, 0] },
+				RuntimeCallError::Module {
+					index: crate::mock::Balances::index() as u8,
+					error: [1, 0],
+				},
 			),
 		]
 	}

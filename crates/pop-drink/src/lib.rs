@@ -24,10 +24,11 @@ pub mod devnet {
 		/// A collection of error types from the `v0` module used for smart contract testing in the
 		/// `devnet` environment.
 		pub mod v0 {
-			pub use pop_api::primitives::v0::{Error as ApiError, *};
+			pub use pop_api::primitives::v0::{Error as RuntimeCallError, *};
 
 			/// Error type for testing contracts using the API V0.
-			pub type Error = crate::error::Error<pop_runtime_devnet::RuntimeError, ApiError, 3>;
+			pub type Error =
+				crate::error::Error<pop_runtime_devnet::RuntimeError, RuntimeCallError, 3>;
 		}
 	}
 
