@@ -16,17 +16,23 @@ mod mock;
 /// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the pop
 /// api.
 pub mod devnet {
-	pub use pop_runtime_devnet::{Runtime, RuntimeError::*};
+	pub use pop_runtime_devnet::Runtime;
 
 	use super::*;
 	pub use crate::error::*;
 
-	/// Utilities for smart contracts using pop api V0.
-	pub mod v0 {
-		pub use pop_api::primitives::v0::{self, *};
+	/// Error related utilities for smart contracts using pop api.
+	pub mod error {
+		pub use pop_runtime_devnet::RuntimeError::*;
 
-		/// Error type for writing tests (see `error` module).
-		pub type Error = crate::error::Error<v0::Error, pop_runtime_devnet::RuntimeError, 3>;
+		pub use crate::error::*;
+
+		pub mod v0 {
+			pub use pop_api::primitives::v0::{self, *};
+
+			/// Error type for writing tests (see `error` module).
+			pub type Error = crate::error::Error<v0::Error, pop_runtime_devnet::RuntimeError, 3>;
+		}
 	}
 
 	// Types used in the pop runtime.
