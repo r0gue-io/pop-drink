@@ -13,20 +13,20 @@ pub mod error;
 #[cfg(test)]
 mod mock;
 
-/// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the pop api.
+/// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the pop
+/// api.
 pub mod devnet {
-	pub use pop_runtime_devnet::{RuntimeError::*, Runtime};
-	pub use crate::error::*;
+	pub use pop_runtime_devnet::{Runtime, RuntimeError::*};
 
 	use super::*;
+	pub use crate::error::*;
 
 	/// Utilities for smart contracts using pop api V0.
 	pub mod v0 {
 		pub use pop_api::primitives::v0::{self, *};
 
 		/// Error type for writing tests (see `error` module).
-		pub type Error =
-			crate::error::Error<v0::Error, pop_runtime_devnet::RuntimeError, 3>;
+		pub type Error = crate::error::Error<v0::Error, pop_runtime_devnet::RuntimeError, 3>;
 	}
 
 	// Types used in the pop runtime.
@@ -53,8 +53,8 @@ pub mod devnet {
 /// - `method` - The name of the constructor method.
 /// - `input` - The input arguments.
 /// - `salt` - Optional deployment salt.
-/// - `init_value` - Initial balance to transfer during the contract creation. Requires the contract method to be
-///   `payable`.
+/// - `init_value` - Initial balance to transfer during the contract creation. Requires the contract
+///   method to be `payable`.
 ///
 /// # Example:
 /// ```rs
@@ -64,7 +64,7 @@ pub mod devnet {
 ///
 /// 	// Deploy contract.
 /// 	//
-///		// `ContractError` is the error type used by the contract.
+/// 	// `ContractError` is the error type used by the contract.
 /// 	assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
 /// }
 /// ```
@@ -101,7 +101,8 @@ where
 /// - `session` - The session for interacting with contracts.
 /// - `func_name`: The name of the contract method.
 /// - `input` - The input arguments.
-/// - `init_value` - Balance to transfer during the call. Requires the contract method to be `payable`.
+/// - `init_value` - Balance to transfer during the call. Requires the contract method to be
+///   `payable`.
 ///
 /// # Example:
 /// ```rs
@@ -111,9 +112,9 @@ where
 /// 	assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
 ///
 /// 	// Call contract.
-///		//
-///		// `()` is the successful result type used by the contract.
-///		// `ContractError` is the error type used by the contract.
+/// 	//
+/// 	// `()` is the successful result type used by the contract.
+/// 	// `ContractError` is the error type used by the contract.
 /// 	call::<Pop, (), ContractError>(
 /// 		session,
 /// 		"transfer",

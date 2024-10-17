@@ -1,12 +1,12 @@
 //! The error type and utilities for testing smart contracts using the Pop API.
 
 use std::fmt::Debug;
-use scale::{Decode, Encode};
 
 pub use drink::{
 	pallet_assets::Error as AssetsError, pallet_balances::Error as BalancesError,
 	pallet_contracts::Error as ContractsError,
 };
+use scale::{Decode, Encode};
 
 /// A simplified error type representing errors from the runtime and its modules.
 ///
@@ -19,9 +19,9 @@ pub use drink::{
 /// - `MODULE_INDEX`: Index of the variant `Error::Module`.
 #[derive(Encode, Decode, Debug)]
 pub enum Error<ApiError, ModuleError, const MODULE_INDEX: u8>
-	where
-		ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
-		ModuleError: Decode + Encode + Debug,
+where
+	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
+	ModuleError: Decode + Encode + Debug,
 {
 	/// An error not related to any specific module.
 	Raw(ApiError),
@@ -29,11 +29,11 @@ pub enum Error<ApiError, ModuleError, const MODULE_INDEX: u8>
 	Module(ModuleError),
 }
 
-impl<ApiError, ModuleError, const MODULE_INDEX: u8>
-From<Error<ApiError, ModuleError, MODULE_INDEX>> for u32
-	where
-		ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
-		ModuleError: Decode + Encode + Debug,
+impl<ApiError, ModuleError, const MODULE_INDEX: u8> From<Error<ApiError, ModuleError, MODULE_INDEX>>
+	for u32
+where
+	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
+	ModuleError: Decode + Encode + Debug,
 {
 	/// Converts an `Error` to a `u32` status code.
 	fn from(error: Error<ApiError, ModuleError, MODULE_INDEX>) -> Self {
@@ -46,15 +46,15 @@ From<Error<ApiError, ModuleError, MODULE_INDEX>> for u32
 				decode::<ApiError>(&encoded)
 			},
 		}
-			.into()
+		.into()
 	}
 }
 
 impl<ApiError, ModuleError, const MODULE_INDEX: u8> From<u32>
-for Error<ApiError, ModuleError, MODULE_INDEX>
-	where
-		ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
-		ModuleError: Decode + Encode + Debug,
+	for Error<ApiError, ModuleError, MODULE_INDEX>
+where
+	ApiError: Decode + Encode + Debug + From<u32> + Into<u32>,
+	ModuleError: Decode + Encode + Debug,
 {
 	/// Converts a `u32` into an `Error`.
 	///
@@ -74,8 +74,9 @@ for Error<ApiError, ModuleError, MODULE_INDEX>
 
 /// Asserts that a result matches an expected `Error`.
 ///
-/// This can be used to assert that a contract execution resulted in a specific runtime error `Error`.
-/// The contract error must be convertible to a `u32` (i.e. the status code received from the api).
+/// This can be used to assert that a contract execution resulted in a specific runtime error
+/// `Error`. The contract error must be convertible to a `u32` (i.e. the status code received from
+/// the api).
 ///
 /// # Example
 ///
@@ -117,7 +118,7 @@ for Error<ApiError, ModuleError, MODULE_INDEX>
 ///
 /// /// Custom error in contract.
 /// pub enum CustomError {
-///		...,
+/// 	...,
 /// 	/// Error with status code.
 /// 	StatusCode(u32),
 /// }
@@ -151,7 +152,7 @@ for Error<ApiError, ModuleError, MODULE_INDEX>
 /// 	...
 ///
 /// 	// Call a contract method that returns a `Result<(), CustomError>`.
-///		let result = call::<Pop, (), CustomError>(session, "hello_world", vec![], None);
+/// 	let result = call::<Pop, (), CustomError>(session, "hello_world", vec![], None);
 ///
 /// 	// Assert the result to the expected error.
 /// 	assert_err!(result, Error::Raw(BadOrigin)));
@@ -169,12 +170,13 @@ for Error<ApiError, ModuleError, MODULE_INDEX>
 /// - `error`: The expected error.
 #[macro_export]
 macro_rules! assert_err {
-    ($result:expr, $error:expr $(,)?) => {
-        $crate::error::assert_err_inner::<_, _, _>($result, $error);
-    };
+	($result:expr, $error:expr $(,)?) => {
+		$crate::error::assert_err_inner::<_, _, _>($result, $error);
+	};
 }
 
 #[track_caller]
+#[allow(unused)]
 fn assert_err_inner<R, E, Error>(result: Result<R, E>, expected_error: Error)
 where
 	E: Into<u32>,
@@ -213,49 +215,30 @@ mod test {
 
 	use crate::error::{AssetsError::*, BalancesError::*, *};
 
-	fn test_cases() -> Vec<(Error<ApiError, crate::mock::RuntimeError, 3>, ApiError)>
-	{
+	fn test_cases() -> Vec<(Error<ApiError, crate::mock::RuntimeError, 3>, ApiError)> {
 		use frame_support::traits::PalletInfoAccess;
 		use pop_api::primitives::{ArithmeticError::*, TokenError::*};
 
 		use crate::mock::RuntimeError::*;
 		vec![
 			(Error::Raw(ApiError::BadOrigin), ApiError::BadOrigin),
-			(
-				Error::Raw(ApiError::Token(BelowMinimum)),
-				ApiError::Token(BelowMinimum),
-			),
-			(
-				Error::Raw(ApiError::Arithmetic(Overflow)),
-				ApiError::Arithmetic(Overflow),
-			),
+			(Error::Raw(ApiError::Token(BelowMinimum)), ApiError::Token(BelowMinimum)),
+			(Error::Raw(ApiError::Arithmetic(Overflow)), ApiError::Arithmetic(Overflow)),
 			(
 				Error::Module(Assets(BalanceLow)),
-				ApiError::Module {
-					index: crate::mock::Assets::index() as u8,
-					error: [0, 0],
-				},
+				ApiError::Module { index: crate::mock::Assets::index() as u8, error: [0, 0] },
 			),
 			(
 				Error::Module(Assets(NoAccount)),
-				ApiError::Module {
-					index: crate::mock::Assets::index() as u8,
-					error: [1, 0],
-				},
+				ApiError::Module { index: crate::mock::Assets::index() as u8, error: [1, 0] },
 			),
 			(
 				Error::Module(Balances(VestingBalance)),
-				ApiError::Module {
-					index: crate::mock::Balances::index() as u8,
-					error: [0, 0],
-				},
+				ApiError::Module { index: crate::mock::Balances::index() as u8, error: [0, 0] },
 			),
 			(
 				Error::Module(Balances(LiquidityRestrictions)),
-				ApiError::Module {
-					index: crate::mock::Balances::index() as u8,
-					error: [1, 0],
-				},
+				ApiError::Module { index: crate::mock::Balances::index() as u8, error: [1, 0] },
 			),
 		]
 	}
