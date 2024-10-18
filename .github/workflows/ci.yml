@@ -22,6 +22,8 @@ jobs:
   check:
     needs: lint
     runs-on: ubuntu-latest
+    env:
+      SKIP_WASM_BUILD: 1
     steps:
       - uses: actions/checkout@v4
 
@@ -30,10 +32,6 @@ jobs:
       - name: Check Build
         run: |
           cargo check --release --locked
-#
-#      - name: Run tests for examples
-#        shell: bash
-#        run: make test_examples
 
   clippy:
     needs: lint
