@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: "./.github/actions/init"
+
+      - name: Check formatting
+        run: |
+          rustup toolchain install nightly --profile minimal --component rustfmt
+          cargo +nightly fmt --all -- --check
+
+  check:
+    needs: lint
+    runs-on: ubuntu-latest
+    env:
+      SKIP_WASM_BUILD: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: "./.github/actions/init"
+
+      - name: Check Build
+        run: |
+          cargo check --release --locked
+
+  clippy:
+    needs: lint
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+    env:
+      RUSTFLAGS: "-Wmissing_docs"
+      SKIP_WASM_BUILD: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: "./.github/actions/init"
+
+      - name: Annotate with Clippy warnings
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --release --locked

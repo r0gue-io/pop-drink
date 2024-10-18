@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -eu
+
+# Are deps installed
+if ! command -v cargo > /dev/null 2>&1
+then
+    echo "cargo couldn't be found, please confirm your set up is properly configured."
+    exit 1
+else
+    # Check Rust formatting
+    if ! cargo +nightly fmt --all -- --check
+    then
+        echo "There are some code style issues."
+        # shellcheck disable=SC2006
+        echo "Run 'cargo +nightly fmt --all' first."
+        exit 1
+    fi
+fi
+
+exit 0

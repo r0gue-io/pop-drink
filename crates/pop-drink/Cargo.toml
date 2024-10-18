@@ -1,0 +1,21 @@
+[package]
+name = "pop-drink"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+drink.workspace = true
+ink_sandbox.workspace = true
+pallet-contracts.workspace = true
+pop-runtime-devnet.workspace = true
+frame-system.workspace = true
+frame-support.workspace = true
+sp-io.workspace = true
+scale.workspace = true
+pop-api.workspace = true
+
+[dev-dependencies]
+scale-info = { workspace = true, features = ["derive"] }
+pallet-assets.workspace = true
+pallet-balances.workspace = true
+pallet-timestamp.workspace = true
