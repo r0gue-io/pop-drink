@@ -3467,6 +3467,7 @@ dependencies = [
 [[package]]
 name = "pallet-api"
 version = "0.1.0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -4637,6 +4638,7 @@ dependencies = [
 [[package]]
 name = "pop-api"
 version = "0.0.0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
 dependencies = [
  "ink",
  "pop-primitives",
@@ -4646,6 +4648,7 @@ dependencies = [
 [[package]]
 name = "pop-chain-extension"
 version = "0.1.0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4680,6 +4683,7 @@ dependencies = [
 [[package]]
 name = "pop-primitives"
 version = "0.0.0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -4688,6 +4692,7 @@ dependencies = [
 [[package]]
 name = "pop-runtime-common"
 version = "0.0.0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
 dependencies = [
  "frame-support",
  "parachains-common",
@@ -4701,6 +4706,7 @@ dependencies = [
 [[package]]
 name = "pop-runtime-devnet"
 version = "0.1.0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
 dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-parachain-system",
