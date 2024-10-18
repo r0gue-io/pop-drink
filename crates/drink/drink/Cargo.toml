@@ -24,15 +24,15 @@ frame-system.workspace = true
 sp-runtime-interface.workspace = true
 
 # Local
-drink-test-macro = {  path = "test-macro" }
+drink-test-macro = { path = "test-macro" }
 ink_sandbox.workspace = true
 
 [features]
 default = [
-    # This is required for the runtime-interface to work properly in the std env.
-    "std",
-    "session",
-    "macros",
+  # This is required for the runtime-interface to work properly in the std env.
+  "std",
+  "session",
+  "macros",
 ]
 session = ["contract-metadata", "contract-transcode", "serde_json"]
 macros = ["contract-metadata", "contract-transcode", "serde_json"]

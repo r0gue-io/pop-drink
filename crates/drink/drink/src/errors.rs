@@ -20,15 +20,7 @@ pub enum Error {
 #[non_exhaustive]
 #[repr(u32)]
 #[derive(
-	Debug,
-	Copy,
-	Clone,
-	PartialEq,
-	Eq,
-	scale::Encode,
-	scale::Decode,
-	scale_info::TypeInfo,
-	Error,
+	Debug, Copy, Clone, PartialEq, Eq, scale::Encode, scale::Decode, scale_info::TypeInfo, Error,
 )]
 pub enum LangError {
 	/// Failed to read execution input for the dispatchable.

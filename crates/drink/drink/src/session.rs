@@ -13,8 +13,8 @@ use frame_support::{traits::fungible::Inspect, weights::Weight};
 use ink_sandbox::{
 	api::prelude::*, AccountIdFor, ContractExecResultFor, ContractInstantiateResultFor, Sandbox,
 };
-use scale::Decode;
 pub use record::{EventBatch, Record};
+use scale::Decode;
 
 use crate::{
 	minimal::MinimalSandboxRuntime,
@@ -106,8 +106,14 @@ pub const NO_ENDOWMENT: Option<BalanceOf<MinimalSandboxRuntime>> = None;
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///
 /// let mut session = Session::<MinimalSandbox>::default();
-/// let _address =
-/// 	session.deploy(contract_bytes(), "new", NO_ARGS, NO_SALT, NO_ENDOWMENT, &get_transcoder())?;
+/// let _address = session.deploy(
+/// 	contract_bytes(),
+/// 	"new",
+/// 	NO_ARGS,
+/// 	NO_SALT,
+/// 	NO_ENDOWMENT,
+/// 	&get_transcoder(),
+/// )?;
 /// let _result: u32 = session.call("foo", NO_ARGS, NO_ENDOWMENT)??;
 /// session.set_actor(bob());
 /// session.call::<_, ()>("bar", NO_ARGS, NO_ENDOWMENT)??;
@@ -135,8 +141,13 @@ pub const NO_ENDOWMENT: Option<BalanceOf<MinimalSandboxRuntime>> = None;
 ///
 /// // Or choosing the file explicitly:
 /// let contract = ContractBundle::load("path/to/your.contract")?;
-/// Session::<MinimalSandbox>::default()
-/// 	.deploy_bundle_and(contract, "new", NO_ARGS, NO_SALT, NO_ENDOWMENT)?; // ...
+/// Session::<MinimalSandbox>::default().deploy_bundle_and(
+/// 	contract,
+/// 	"new",
+/// 	NO_ARGS,
+/// 	NO_SALT,
+/// 	NO_ENDOWMENT,
+/// )?; // ...
 ///  # Ok(()) }
 /// ```
 pub struct Session<T: Sandbox>
@@ -309,9 +320,8 @@ where
 		});
 
 		let ret = match &result.result {
-			Ok(exec_result) if exec_result.result.did_revert() => {
-				Err(SessionError::DeploymentReverted)
-			},
+			Ok(exec_result) if exec_result.result.did_revert() =>
+				Err(SessionError::DeploymentReverted),
 			Ok(exec_result) => {
 				let address = exec_result.account_id.clone();
 				self.record.push_deploy_return(address.clone());
@@ -582,9 +592,8 @@ where
 		});
 
 		let ret = match &result.result {
-			Ok(exec_result) if exec_result.did_revert() => {
-				Err(SessionError::CallReverted(exec_result.data.clone()))
-			},
+			Ok(exec_result) if exec_result.did_revert() =>
+				Err(SessionError::CallReverted(exec_result.data.clone())),
 			Ok(exec_result) => {
 				self.record.push_call_return(exec_result.data.clone());
 				self.record.last_call_return_decoded::<V>()

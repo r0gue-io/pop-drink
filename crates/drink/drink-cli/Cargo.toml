@@ -15,7 +15,7 @@ clap = { workspace = true, features = ["derive"] }
 crossterm.workspace = true
 contract-build.workspace = true
 contract-transcode.workspace = true
-ratatui = { workspace = true, features = ["all-widgets"]  }
+ratatui = { workspace = true, features = ["all-widgets"] }
 thiserror.workspace = true
 
 # Local

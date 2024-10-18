@@ -27,7 +27,7 @@ sp-runtime-interface.workspace = true
 
 [features]
 default = [
- # This is required for the runtime-interface to work properly in the std env.
- "std",
+  # This is required for the runtime-interface to work properly in the std env.
+  "std",
 ]
 std = []

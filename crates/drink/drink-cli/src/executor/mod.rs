@@ -5,7 +5,10 @@ use std::env;
 
 use anyhow::Result;
 use clap::Parser;
-use drink::{sandbox_api::prelude::{SystemAPI, BalanceAPI}, AccountId32, Weight};
+use drink::{
+	sandbox_api::prelude::{BalanceAPI, SystemAPI},
+	AccountId32, Weight,
+};
 
 use crate::{app_state::AppState, cli::CliCommand};
 
