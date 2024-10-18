@@ -28,7 +28,7 @@ pub mod devnet {
 		pub use crate::error::*;
 
 		pub mod v0 {
-			pub use pop_api::primitives::v0::{self, *};
+			pub use pop_api::primitives::v0::{self, Error as ApiError, *};
 
 			/// Error type for writing tests (see `error` module).
 			pub type Error = crate::error::Error<v0::Error, pop_runtime_devnet::RuntimeError, 3>;
@@ -143,8 +143,9 @@ where
 {
 	match session.call::<String, ()>(func_name, &input, endowment) {
 		// If the call is reverted, decode the error into the specified error type.
-		Err(SessionError::CallReverted(error)) =>
-			Err(E::decode(&mut &error[2..]).expect("Decoding failed")),
+		Err(SessionError::CallReverted(error)) => {
+			Err(E::decode(&mut &error[2..]).expect("Decoding failed"))
+		},
 		// If the call is successful, decode the last returned value.
 		Ok(_) => Ok(session
 			.record()

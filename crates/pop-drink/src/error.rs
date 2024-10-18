@@ -176,8 +176,7 @@ macro_rules! assert_err {
 }
 
 #[track_caller]
-#[allow(unused)]
-fn assert_err_inner<R, E, Error>(result: Result<R, E>, expected_error: Error)
+pub fn assert_err_inner<R, E, Error>(result: Result<R, E>, expected_error: Error)
 where
 	E: Into<u32>,
 	Error: From<u32> + Into<u32> + Debug,
