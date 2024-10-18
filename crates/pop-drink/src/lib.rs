@@ -143,9 +143,8 @@ where
 {
 	match session.call::<String, ()>(func_name, &input, endowment) {
 		// If the call is reverted, decode the error into the specified error type.
-		Err(SessionError::CallReverted(error)) => {
-			Err(E::decode(&mut &error[2..]).expect("Decoding failed"))
-		},
+		Err(SessionError::CallReverted(error)) =>
+			Err(E::decode(&mut &error[2..]).expect("Decoding failed")),
 		// If the call is successful, decode the last returned value.
 		Ok(_) => Ok(session
 			.record()
