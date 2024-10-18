@@ -20,7 +20,6 @@ frame_support::construct_runtime!(
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
 		Contracts: pallet_contracts,
-  Fungibles: pallet_api::fungibles,
 	}
 );
 
@@ -85,12 +84,6 @@ impl pallet_assets::Config<AssetsInstance> for Test {
 	type ForceOrigin = EnsureRoot<u64>;
 	type Freezer = ();
 	type RuntimeEvent = RuntimeEvent;
-}
-
-impl pallet_api::fungibles::Config for Test {
-	type AssetsInstance = AssetsInstance;
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
 }
 
 parameter_types! {

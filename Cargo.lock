@@ -4666,7 +4666,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "ink_sandbox",
- "pallet-api",
  "pallet-assets",
  "pallet-balances",
  "pallet-contracts",
