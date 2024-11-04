@@ -164,12 +164,11 @@ where
 	E: Decode + Encode + Debug,
 {
 	match last_contract_event(session) {
-		Some(last_event) => {
+		Some(last_event) =>
 			if last_event != event.encode().as_slice() {
 				let decoded = E::decode(&mut &last_event[..]).expect("Decoding failed");
 				panic!("{}", assert_message(&decoded, &event));
-			}
-		},
+			},
 		None => panic!("{}", assert_message(&"None", &event)),
 	}
 }
