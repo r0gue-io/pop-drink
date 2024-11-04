@@ -10,6 +10,8 @@ pub use sp_io::TestExternalities;
 
 /// Error type and utilities for testing contracts using the Pop API.
 pub mod error;
+/// Collection of macros for testing contracts using the Pop API.
+pub mod macros;
 #[cfg(test)]
 mod mock;
 
