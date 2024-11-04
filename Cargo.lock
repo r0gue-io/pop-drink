@@ -4638,10 +4638,10 @@ dependencies = [
 [[package]]
 name = "pop-api"
 version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin/feat-assert_last_event#1e4b58adec46ae39b982172ebee22a51c941965f"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#f2131648d775d845cfced8ed3e645102244acc7b"
 dependencies = [
  "ink",
- "pop-primitives 0.0.0 (git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin/feat-assert_last_event)",
+ "pop-primitives",
  "sp-io",
 ]
 
@@ -4678,15 +4678,6 @@ dependencies = [
  "pop-runtime-devnet",
  "scale-info",
  "sp-io",
-]
-
-[[package]]
-name = "pop-primitives"
-version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin/feat-assert_last_event#1e4b58adec46ae39b982172ebee22a51c941965f"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
 ]
 
 [[package]]
@@ -4768,7 +4759,7 @@ dependencies = [
  "polkadot-parachain-primitives",
  "polkadot-runtime-common",
  "pop-chain-extension",
- "pop-primitives 0.0.0 (git+https://github.com/r0gue-io/pop-node.git?branch=main)",
+ "pop-primitives",
  "pop-runtime-common",
  "scale-info",
  "smallvec",

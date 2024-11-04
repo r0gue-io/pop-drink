@@ -54,6 +54,6 @@ sp-runtime-interface = { version = "28.0.0", features = ["std"] }
 # Local
 drink = { path = "crates/drink/drink" }
 ink_sandbox = { path = "crates/ink-sandbox" }
-pop-api = { git = "https://github.com/r0gue-io/pop-node.git", branch = "chungquantin/feat-assert_last_event" }
+pop-api = { git = "https://github.com/r0gue-io/pop-node.git", branch = "main" }
 pop-drink = { path = "crates/pop-drink" }
 pop-runtime-devnet = { git = "https://github.com/r0gue-io/pop-node.git", branch = "main" }

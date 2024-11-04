@@ -134,7 +134,7 @@ where
 /// # Example
 ///
 /// ```rs
-/// assert_last_event!(
+/// assert_last_contract_event!(
 /// 	&session,
 /// 	Transfer {
 /// 		from: Some(account_id_from_slice(&contract)),
@@ -148,14 +148,14 @@ where
 /// - `session` - The session for interacting with contracts.
 /// - `event` - The expected event.
 #[macro_export]
-macro_rules! assert_last_event {
+macro_rules! assert_last_contract_event {
 	($session:expr, $event:expr $(,)?) => {
-		$crate::macros::assert_last_event_inner::<_, _>($session, $event);
+		$crate::macros::assert_last_contract_event_inner::<_, _>($session, $event);
 	};
 }
 
 #[track_caller]
-pub fn assert_last_event_inner<S, E>(session: &Session<S>, event: E)
+pub fn assert_last_contract_event_inner<S, E>(session: &Session<S>, event: E)
 where
 	S: Sandbox,
 	S::Runtime: pallet_contracts::Config,
@@ -164,11 +164,12 @@ where
 	E: Decode + Encode + Debug,
 {
 	match last_contract_event(session) {
-		Some(last_event) =>
+		Some(last_event) => {
 			if last_event != event.encode().as_slice() {
 				let decoded = E::decode(&mut &last_event[..]).expect("Decoding failed");
 				panic!("{}", assert_message(&decoded, &event));
-			},
+			}
+		},
 		None => panic!("{}", assert_message(&"None", &event)),
 	}
 }
