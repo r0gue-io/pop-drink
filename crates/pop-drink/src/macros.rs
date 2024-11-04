@@ -99,8 +99,8 @@ use crate::last_contract_event;
 /// ```
 ///
 /// # Parameters:
-/// - `result`: The result which contains the custom error type.
-/// - `error`: The expected error.
+/// - `result` - The result which contains the custom error type.
+/// - `error` - The expected error.
 #[macro_export]
 macro_rules! assert_err {
 	($result:expr, $error:expr $(,)?) => {
@@ -130,6 +130,23 @@ where
 ///
 /// This can be used to assert that an event emitted from the latest contract execution resulted in
 /// a specific event.
+///
+/// # Example
+///
+/// ```rs
+/// assert_last_event!(
+/// 	&session,
+/// 	Transfer {
+/// 		from: Some(account_id_from_slice(&contract)),
+/// 		to: Some(account_id_from_slice(&BOB)),
+/// 		value,
+/// 	}
+/// );
+/// ```
+///
+/// # Parameters:
+/// - `session` - The session for interacting with contracts.
+/// - `event` - The expected event.
 #[macro_export]
 macro_rules! assert_last_event {
 	($session:expr, $event:expr $(,)?) => {
@@ -147,11 +164,11 @@ where
 	E: Decode + Encode + Debug,
 {
 	match last_contract_event(session) {
-		Some(last_event) => {
+		Some(last_event) =>
 			if last_event != event.encode().as_slice() {
-				panic!("{}", assert_message(&E::decode(&mut &last_event[..]), &event));
-			}
-		},
+				let decoded = E::decode(&mut &last_event[..]).expect("Decoding failed");
+				panic!("{}", assert_message(&decoded, &event));
+			},
 		None => panic!("{}", assert_message(&"None", &event)),
 	}
 }
@@ -159,8 +176,8 @@ where
 fn assert_message<L: Debug, R: Debug>(left: &L, right: &R) -> String {
 	format!(
 		r#"assertion `left == right` failed
-	left: {:?}
-	right: {:?}"#,
+  left: {:?}
+ right: {:?}"#,
 		left, right
 	)
 }

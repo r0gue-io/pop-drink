@@ -107,7 +107,7 @@ where
 ///
 /// # Parameters:
 /// - `session` - The session for interacting with contracts.
-/// - `func_name`: The name of the contract method.
+/// - `func_name` - The name of the contract method.
 /// - `input` - The input arguments.
 /// - `init_value` - Balance to transfer during the call. Requires the contract method to be
 ///   `payable`.
