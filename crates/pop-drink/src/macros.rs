@@ -119,10 +119,10 @@ where
 	if let Err(error) = result {
 		let error_code: u32 = error.into();
 		if error_code != expected_code {
-			panic!("{:?}", assert_message(&Error::from(error_code), &expected_error));
+			panic!("{}", assert_message(&Error::from(error_code), &expected_error));
 		}
 	} else {
-		panic!("{:?}", assert_message(&"Ok()", &expected_error));
+		panic!("{}", assert_message(&"Ok()", &expected_error));
 	}
 }
 
@@ -146,9 +146,13 @@ where
 		TryInto<pallet_contracts::Event<S::Runtime>>,
 	E: Decode + Encode + Debug,
 {
-	let last_event = last_contract_event(session).expect(&assert_message(&"None", &event));
-	if last_event != event.encode().as_slice() {
-		assert_message(&E::decode(&mut &last_event[..]), &event);
+	match last_contract_event(session) {
+		Some(last_event) => {
+			if last_event != event.encode().as_slice() {
+				panic!("{}", assert_message(&E::decode(&mut &last_event[..]), &event));
+			}
+		},
+		None => panic!("{}", assert_message(&"None", &event)),
 	}
 }
 
@@ -157,6 +161,6 @@ fn assert_message<L: Debug, R: Debug>(left: &L, right: &R) -> String {
 		r#"assertion `left == right` failed
 	left: {:?}
 	right: {:?}"#,
-		left, right,
+		left, right
 	)
 }
