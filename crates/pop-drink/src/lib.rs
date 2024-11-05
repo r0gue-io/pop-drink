@@ -10,6 +10,8 @@ pub use sp_io::TestExternalities;
 
 /// Error type and utilities for testing contracts using the Pop API.
 pub mod error;
+/// Collection of macros for testing contracts using the Pop API.
+pub mod macros;
 #[cfg(test)]
 mod mock;
 
@@ -105,7 +107,7 @@ where
 ///
 /// # Parameters:
 /// - `session` - The session for interacting with contracts.
-/// - `func_name`: The name of the contract method.
+/// - `func_name` - The name of the contract method.
 /// - `input` - The input arguments.
 /// - `init_value` - Balance to transfer during the call. Requires the contract method to be
 ///   `payable`.

@@ -4638,7 +4638,7 @@ dependencies = [
 [[package]]
 name = "pop-api"
 version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#f2131648d775d845cfced8ed3e645102244acc7b"
 dependencies = [
  "ink",
  "pop-primitives",

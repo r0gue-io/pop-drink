@@ -1,11 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-  "crates/ink-sandbox",
-  "crates/drink/drink",
-  "crates/drink/drink-cli",
-  "crates/drink/drink/test-macro",
-  "crates/pop-drink",
+    "crates/ink-sandbox",
+    "crates/drink/drink",
+    "crates/drink/drink-cli",
+    "crates/drink/drink/test-macro",
+    "crates/pop-drink",
 ]
 exclude = ["crates/drink/examples"]
 
@@ -30,7 +30,7 @@ proc-macro2 = { version = "1" }
 quote = { version = "1" }
 ratatui = { version = "0.21.0" }
 scale = { package = "parity-scale-codec", version = "3.6.9", features = [
-  "derive",
+    "derive",
 ] }
 scale-info = { version = "2.10.0" }
 serde_json = { version = "1.0" }
