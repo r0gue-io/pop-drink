@@ -15,70 +15,52 @@ pub mod macros;
 #[cfg(test)]
 mod mock;
 
-/// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the pop
-/// api.
-pub mod devnet {
-	pub use pop_runtime_devnet::Runtime;
+macro_rules! define_runtime_utilities {
+	($runtime_crate:ident) => {
+		pub use $runtime_crate::Runtime;
 
-	use super::*;
-	pub use crate::error::*;
-
-	/// Error related utilities for smart contracts using pop api.
-	pub mod error {
-		pub use pop_runtime_devnet::RuntimeError::*;
-
+		use super::*;
 		pub use crate::error::*;
 
-		pub mod v0 {
-			pub use pop_api::primitives::v0::{self, Error as ApiError, *};
+		/// Error related utilities for smart contracts using Pop API.
+		pub mod error {
+			pub use $runtime_crate::RuntimeError::*;
 
-			/// Error type for writing tests (see `error` module).
-			pub type Error = crate::error::Error<v0::Error, pop_runtime_devnet::RuntimeError, 3>;
+			pub use crate::error::*;
+
+			/// Error types for smart contracts using Pop API V0.
+			pub mod v0 {
+				pub use pop_api::primitives::v0::{self, Error as ApiError, *};
+
+				/// Error type for writing tests (see `error` module).
+				pub type Error = crate::error::Error<v0::Error, $runtime_crate::RuntimeError, 3>;
+			}
 		}
-	}
 
-	// Types used in the pop runtime.
-	pub type Balance = BalanceFor<Runtime>;
-	pub type AccountId = AccountIdFor<Runtime>;
+		/// Alias for the balance type.
+		pub type Balance = BalanceFor<Runtime>;
+		/// Alias for the account ID type.
+		pub type AccountId = AccountIdFor<Runtime>;
 
-	/// Converts an AccountId from Pop's runtime to the account ID used in the contract environment.
-	pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
-		let account: [u8; 32] = s.clone().into();
-		super::account_id_from_slice(&account)
-	}
+		/// Converts an AccountId from Pop's runtime to the account ID used in the contract
+		/// environment.
+		pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
+			let account: [u8; 32] = s.clone().into();
+			super::account_id_from_slice(&account)
+		}
+	};
 }
 
-/// Types and utilities for testing smart contracts interacting with Pop Network Testnet via the pop
-/// api.
+/// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the Pop
+/// API.
+pub mod devnet {
+	define_runtime_utilities!(pop_runtime_devnet);
+}
+
+/// Types and utilities for testing smart contracts interacting with Pop Network Testnet via the Pop
+/// API.
 pub mod testnet {
-	pub use pop_runtime_testnet::Runtime;
-
-	use super::*;
-	pub use crate::error::*;
-
-	/// Error related utilities for smart contracts using pop api.
-	pub mod error {
-		pub use pop_runtime_testnet::RuntimeError::*;
-
-		pub use crate::error::*;
-
-		pub mod v0 {
-			pub use pop_api::primitives::v0::{self, Error as ApiError, *};
-
-			/// Error type for writing tests (see `error` module).
-			pub type Error = crate::error::Error<v0::Error, pop_runtime_testnet::RuntimeError, 3>;
-		}
-	}
-
-	// Types used in the pop runtime.
-	pub type Balance = BalanceFor<Runtime>;
-	pub type AccountId = AccountIdFor<Runtime>;
-
-	/// Converts an AccountId from Pop's runtime to the account ID used in the contract environment.
-	pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
-		let account: [u8; 32] = s.clone().into();
-		super::account_id_from_slice(&account)
-	}
+	define_runtime_utilities!(pop_runtime_testnet);
 }
 
 /// Deploy a contract with a given constructor, arguments, salt and an initial value. In
