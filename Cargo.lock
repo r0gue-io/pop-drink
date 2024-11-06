@@ -3467,7 +3467,7 @@ dependencies = [
 [[package]]
 name = "pallet-api"
 version = "0.1.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#d642b4201c86290222c9e1806bf194bb0ee96feb"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -4638,7 +4638,7 @@ dependencies = [
 [[package]]
 name = "pop-api"
 version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#f2131648d775d845cfced8ed3e645102244acc7b"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#d642b4201c86290222c9e1806bf194bb0ee96feb"
 dependencies = [
  "ink",
  "pop-primitives",
@@ -4648,7 +4648,7 @@ dependencies = [
 [[package]]
 name = "pop-chain-extension"
 version = "0.1.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#d642b4201c86290222c9e1806bf194bb0ee96feb"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4676,6 +4676,7 @@ dependencies = [
  "parity-scale-codec",
  "pop-api",
  "pop-runtime-devnet",
+ "pop-runtime-testnet",
  "scale-info",
  "sp-io",
 ]
@@ -4683,7 +4684,7 @@ dependencies = [
 [[package]]
 name = "pop-primitives"
 version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#d642b4201c86290222c9e1806bf194bb0ee96feb"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -4692,7 +4693,7 @@ dependencies = [
 [[package]]
 name = "pop-runtime-common"
 version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#d642b4201c86290222c9e1806bf194bb0ee96feb"
 dependencies = [
  "frame-support",
  "parachains-common",
@@ -4706,7 +4707,7 @@ dependencies = [
 [[package]]
 name = "pop-runtime-devnet"
 version = "0.1.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#52fb7f06a89955d462900e33d2b9c9170c4534a0"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#d642b4201c86290222c9e1806bf194bb0ee96feb"
 dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-parachain-system",
@@ -4771,6 +4772,81 @@ dependencies = [
  "sp-inherents",
  "sp-io",
  "sp-mmr-primitives",
+ "sp-offchain",
+ "sp-runtime",
+ "sp-session",
+ "sp-std",
+ "sp-transaction-pool",
+ "sp-version",
+ "staging-parachain-info",
+ "staging-xcm",
+ "staging-xcm-builder",
+ "staging-xcm-executor",
+ "substrate-wasm-builder",
+]
+
+[[package]]
+name = "pop-runtime-testnet"
+version = "0.4.2"
+source = "git+https://github.com/r0gue-io/pop-node.git?branch=main#d642b4201c86290222c9e1806bf194bb0ee96feb"
+dependencies = [
+ "cumulus-pallet-aura-ext",
+ "cumulus-pallet-parachain-system",
+ "cumulus-pallet-session-benchmarking",
+ "cumulus-pallet-xcm",
+ "cumulus-pallet-xcmp-queue",
+ "cumulus-primitives-aura",
+ "cumulus-primitives-core",
+ "cumulus-primitives-storage-weight-reclaim",
+ "cumulus-primitives-utility",
+ "frame-benchmarking",
+ "frame-executive",
+ "frame-metadata-hash-extension",
+ "frame-support",
+ "frame-system",
+ "frame-system-benchmarking",
+ "frame-system-rpc-runtime-api",
+ "frame-try-runtime",
+ "hex-literal",
+ "log",
+ "pallet-api",
+ "pallet-assets",
+ "pallet-aura",
+ "pallet-authorship",
+ "pallet-balances",
+ "pallet-collator-selection",
+ "pallet-contracts",
+ "pallet-message-queue",
+ "pallet-multisig",
+ "pallet-nft-fractionalization",
+ "pallet-nfts",
+ "pallet-nfts-runtime-api",
+ "pallet-preimage",
+ "pallet-proxy",
+ "pallet-scheduler",
+ "pallet-session",
+ "pallet-sudo",
+ "pallet-timestamp",
+ "pallet-transaction-payment",
+ "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-utility",
+ "pallet-xcm",
+ "parachains-common",
+ "parity-scale-codec",
+ "polkadot-parachain-primitives",
+ "polkadot-runtime-common",
+ "pop-chain-extension",
+ "pop-primitives",
+ "pop-runtime-common",
+ "scale-info",
+ "smallvec",
+ "sp-api",
+ "sp-block-builder",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-genesis-builder",
+ "sp-inherents",
+ "sp-io",
  "sp-offchain",
  "sp-runtime",
  "sp-session",
@@ -7243,7 +7319,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
