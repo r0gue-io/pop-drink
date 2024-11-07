@@ -15,73 +15,55 @@ pub mod macros;
 #[cfg(test)]
 mod mock;
 
+// Expands into a module `$mod_name` defining several types using the `Runtime` defined in the given
+// `&crate_name`.
 macro_rules! define_runtime_utilities {
-	($runtime_type:ident) => {
-		/// Alias for the balance type.
-		pub type Balance = BalanceFor<$runtime_type>;
-		/// Alias for the account ID type.
-		pub type AccountId = AccountIdFor<$runtime_type>;
+	($crate_name:ident, $mod_name:ident) => {
 
-		/// Converts an AccountId from Pop's runtime to the account ID used in the contract
-		/// environment.
-		pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
-			let account: [u8; 32] = s.clone().into();
-			super::account_id_from_slice(&account)
+		/// Types and utilities for testing smart contracts interacting with Pop Network $runtime_type via the Pop
+		/// API.
+		pub mod $mod_name {
+			pub use $crate_name::Runtime;
+
+			use super::*;
+            pub use crate::error::*;
+
+			/// Alias for the balance type.
+			pub type Balance = BalanceFor<Runtime>;
+			/// Alias for the account ID type.
+			pub type AccountId = AccountIdFor<Runtime>;
+
+			/// Error related utilities for smart contracts using Pop API.
+			pub mod error {
+				pub use $crate_name::RuntimeError::*;
+
+				pub use crate::error::*;
+
+				/// Error types for smart contracts using Pop API V0.
+				pub mod v0 {
+					pub use pop_api::primitives::v0::{self, Error as ApiError, *};
+
+					/// Error type for writing tests (see `error` module).
+					pub type Error = crate::error::Error<v0::Error, $crate_name::RuntimeError, 3>;
+				}
+			}
+
+			/// Converts an AccountId from Pop's runtime to the account ID used in the contract
+			/// environment.
+			pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
+				let account: [u8; 32] = s.clone().into();
+				super::account_id_from_slice(&account)
+			}
 		}
 	};
 }
 
-/// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the Pop
-/// API.
-pub mod devnet {
-	pub use pop_runtime_devnet::Runtime;
-
-	use super::*;
-	pub use crate::error::*;
-
-	/// Error related utilities for smart contracts using Pop API.
-	pub mod error {
-		pub use pop_runtime_devnet::RuntimeError::*;
-
-		pub use crate::error::*;
-
-		/// Error types for smart contracts using Pop API V0.
-		pub mod v0 {
-			pub use pop_api::primitives::v0::{self, Error as ApiError, *};
-
-			/// Error type for writing tests (see `error` module).
-			pub type Error = crate::error::Error<v0::Error, pop_runtime_devnet::RuntimeError, 3>;
-		}
-	}
-
-	define_runtime_utilities!(Runtime);
-}
-
-/// Types and utilities for testing smart contracts interacting with Pop Network Testnet via the Pop
-/// API.
-pub mod testnet {
-	pub use pop_runtime_testnet::Runtime;
-
-	use super::*;
-	pub use crate::error::*;
-
-	/// Error related utilities for smart contracts using Pop API.
-	pub mod error {
-		pub use pop_runtime_testnet::RuntimeError::*;
-
-		pub use crate::error::*;
-
-		/// Error types for smart contracts using Pop API V0.
-		pub mod v0 {
-			pub use pop_api::primitives::v0::{self, Error as ApiError, *};
-
-			/// Error type for writing tests (see `error` module).
-			pub type Error = crate::error::Error<v0::Error, pop_runtime_testnet::RuntimeError, 3>;
-		}
-	}
-
-	define_runtime_utilities!(Runtime);
-}
+// Types and utilities for testing smart contracts interacting with Pop Network devnet via the Pop
+// API.
+define_runtime_utilities!(pop_runtime_devnet, devnet);
+// Types and utilities for testing smart contracts interacting with Pop Network testnet via the Pop
+// API.
+define_runtime_utilities!(pop_runtime_testnet, testnet);
 
 /// Deploy a contract with a given constructor, arguments, salt and an initial value. In
 /// case of success, returns the address of the deployed contract.
