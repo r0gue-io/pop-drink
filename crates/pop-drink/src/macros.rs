@@ -17,13 +17,13 @@ use crate::last_contract_event;
 ///
 /// ```rs
 /// use drink::devnet::{
-/// 	Assets,
-/// 	AssetsError::BalanceLow,
-/// 	v0::{
-/// 		Arithmetic,
-/// 		ArithmeticError::Overflow,
-/// 		BadOrigin
-/// 	},
+///     Assets,
+///     AssetsError::BalanceLow,
+///     v0::{
+///         Arithmetic,
+///         ArithmeticError::Overflow,
+///         BadOrigin
+///     },
 /// };
 /// ```
 ///
@@ -51,50 +51,50 @@ use crate::last_contract_event;
 ///
 /// /// Custom error in contract.
 /// pub enum CustomError {
-/// 	...,
-/// 	/// Error with status code.
-/// 	StatusCode(u32),
+///     ...,
+///     /// Error with status code.
+///     StatusCode(u32),
 /// }
 ///
 /// impl From<StatusCode> for CustomError {
-/// 	/// Converts a `StatusCode` (returned by the api) to a `CustomError`.
-/// 	fn from(value: StatusCode) -> Self {
-/// 		match value {
-/// 			...,
-/// 			_ => CustomError::StatusCode(value.0),
-/// 		}
-/// 	}
+///     /// Converts a `StatusCode` (returned by the api) to a `CustomError`.
+///     fn from(value: StatusCode) -> Self {
+///     	match value {
+///     		...,
+///     		_ => CustomError::StatusCode(value.0),
+///     	}
+///     }
 /// }
 ///
 /// impl From<CustomError> for u32 {
-/// 	/// Converts a `CustomError to a `u32`.
-/// 	//
-/// 	// Required for the `assert_err` macro to assert to `Error`.
-/// 	fn from(value: CustomError) -> Self {
-/// 		match value {
-/// 			...,
-/// 			CustomError::StatusCode(status_code) => status_code,
-/// 		}
-/// 	}
+///     /// Converts a `CustomError to a `u32`.
+///     //
+///     // Required for the `assert_err` macro to assert to `Error`.
+///     fn from(value: CustomError) -> Self {
+///         match value {
+///             ...,
+///             CustomError::StatusCode(status_code) => status_code,
+///         }
+///     }
 /// }
 ///
 /// - Use `assert_err` in a test.
 ///
 /// #[drink::test(sandbox = Pop)]
 /// fn test_custom_error(mut session: Session) {
-/// 	...
+///     ...
 ///
-/// 	// Call a contract method that returns a `Result<(), CustomError>`.
-/// 	let result = call::<Pop, (), CustomError>(session, "hello_world", vec![], None);
+///     // Call a contract method that returns a `Result<(), CustomError>`.
+///     let result = call::<Pop, (), CustomError>(session, "hello_world", vec![], None);
 ///
-/// 	// Assert the result to the expected error.
-/// 	assert_err!(result, Error::Raw(BadOrigin)));
+///     // Assert the result to the expected error.
+///     assert_err!(result, Error::Raw(BadOrigin)));
 ///
-/// 	// Other assertions:
-/// 	...
-/// 	assert_err!(result, Error::Raw(Arithmetic(Overflow)));
-/// 	...
-/// 	assert_err!(result, Error::Module(Assets(BalanceLow)));
+///     // Other assertions:
+///     ...
+///     assert_err!(result, Error::Raw(Arithmetic(Overflow)));
+///     ...
+///     assert_err!(result, Error::Module(Assets(BalanceLow)));
 /// }
 /// ```
 ///
@@ -135,12 +135,12 @@ where
 ///
 /// ```rs
 /// assert_last_contract_event!(
-/// 	&session,
-/// 	Transfer {
-/// 		from: Some(account_id_from_slice(&contract)),
-/// 		to: Some(account_id_from_slice(&BOB)),
-/// 		value,
-/// 	}
+///     &session,
+///     Transfer {
+///         from: Some(account_id_from_slice(&contract)),
+///         to: Some(account_id_from_slice(&BOB)),
+///         value,
+///     }
 /// );
 /// ```
 ///

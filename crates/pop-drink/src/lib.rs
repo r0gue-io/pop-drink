@@ -103,12 +103,12 @@ pub mod testnet {
 /// ```rs
 /// #[drink::test(sandbox = Pop)]
 /// fn test_constructor_works(mut session: Session) {
-/// 	let bundle = BundleProvider::local().unwrap();
+///    let bundle = BundleProvider::local().unwrap();
 ///
-/// 	// Deploy contract.
-/// 	//
-/// 	// `ContractError` is the error type used by the contract.
-/// 	assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
+///    // Deploy contract.
+///    //
+///    // `ContractError` is the error type used by the contract.
+///    assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
 /// }
 /// ```
 pub fn deploy<S, E>(
@@ -151,19 +151,19 @@ where
 /// ```rs
 /// #[drink::test(sandbox = Pop)]
 /// fn call_works(mut session: Session) {
-/// 	let bundle = BundleProvider::local().unwrap();
-/// 	assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
+///    let bundle = BundleProvider::local().unwrap();
+///    assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
 ///
-/// 	// Call contract.
-/// 	//
-/// 	// `()` is the successful result type used by the contract.
-/// 	// `ContractError` is the error type used by the contract.
-/// 	call::<Pop, (), ContractError>(
-/// 		session,
-/// 		"transfer",
-/// 		input,
-/// 		init_value,
-/// 	)
+///    // Call contract.
+///    //
+///    // `()` is the successful result type used by the contract.
+///    // `ContractError` is the error type used by the contract.
+///    call::<Pop, (), ContractError>(
+///    	session,
+///    	"transfer",
+///    	input,
+///    	init_value,
+///    )
 /// }
 /// ```
 pub fn call<S, O, E>(
@@ -180,8 +180,9 @@ where
 {
 	match session.call::<String, ()>(func_name, &input, endowment) {
 		// If the call is reverted, decode the error into the specified error type.
-		Err(SessionError::CallReverted(error)) =>
-			Err(E::decode(&mut &error[2..]).expect("Decoding failed")),
+		Err(SessionError::CallReverted(error)) => {
+			Err(E::decode(&mut &error[2..]).expect("Decoding failed"))
+		},
 		// If the call is successful, decode the last returned value.
 		Ok(_) => Ok(session
 			.record()
@@ -206,12 +207,12 @@ where
 /// use drink::last_contract_event;
 ///
 /// assert_eq!(
-/// 	last_contract_event::<Pop>(&session).unwrap(),
-/// 	ContractEvent {
-/// 		value: 42,
-/// 	}
-/// 	.encode()
-/// 	.as_slice()
+///    last_contract_event::<Pop>(&session).unwrap(),
+///    ContractEvent {
+///    	value: 42,
+///    }
+///    .encode()
+///    .as_slice()
 /// );
 /// ```
 pub fn last_contract_event<S>(session: &Session<S>) -> Option<Vec<u8>>
