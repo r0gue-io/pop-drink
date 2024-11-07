@@ -57,3 +57,4 @@ ink_sandbox = { path = "crates/ink-sandbox" }
 pop-api = { git = "https://github.com/r0gue-io/pop-node.git", branch = "main" }
 pop-drink = { path = "crates/pop-drink" }
 pop-runtime-devnet = { git = "https://github.com/r0gue-io/pop-node.git", branch = "main" }
+pop-runtime-testnet = { git = "https://github.com/r0gue-io/pop-node.git", branch = "main" }

@@ -15,20 +15,37 @@ pub mod macros;
 #[cfg(test)]
 mod mock;
 
-/// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the pop
-/// api.
+macro_rules! define_runtime_utilities {
+	($runtime_type:ident) => {
+		/// Alias for the balance type.
+		pub type Balance = BalanceFor<$runtime_type>;
+		/// Alias for the account ID type.
+		pub type AccountId = AccountIdFor<$runtime_type>;
+
+		/// Converts an AccountId from Pop's runtime to the account ID used in the contract
+		/// environment.
+		pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
+			let account: [u8; 32] = s.clone().into();
+			super::account_id_from_slice(&account)
+		}
+	};
+}
+
+/// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the Pop
+/// API.
 pub mod devnet {
 	pub use pop_runtime_devnet::Runtime;
 
 	use super::*;
 	pub use crate::error::*;
 
-	/// Error related utilities for smart contracts using pop api.
+	/// Error related utilities for smart contracts using Pop API.
 	pub mod error {
 		pub use pop_runtime_devnet::RuntimeError::*;
 
 		pub use crate::error::*;
 
+		/// Error types for smart contracts using Pop API V0.
 		pub mod v0 {
 			pub use pop_api::primitives::v0::{self, Error as ApiError, *};
 
@@ -37,15 +54,33 @@ pub mod devnet {
 		}
 	}
 
-	// Types used in the pop runtime.
-	pub type Balance = BalanceFor<Runtime>;
-	pub type AccountId = AccountIdFor<Runtime>;
+	define_runtime_utilities!(Runtime);
+}
 
-	/// Converts an AccountId from Pop's runtime to the account ID used in the contract environment.
-	pub fn account_id_from_slice(s: &AccountId) -> pop_api::primitives::AccountId {
-		let account: [u8; 32] = s.clone().into();
-		super::account_id_from_slice(&account)
+/// Types and utilities for testing smart contracts interacting with Pop Network Testnet via the Pop
+/// API.
+pub mod testnet {
+	pub use pop_runtime_testnet::Runtime;
+
+	use super::*;
+	pub use crate::error::*;
+
+	/// Error related utilities for smart contracts using Pop API.
+	pub mod error {
+		pub use pop_runtime_testnet::RuntimeError::*;
+
+		pub use crate::error::*;
+
+		/// Error types for smart contracts using Pop API V0.
+		pub mod v0 {
+			pub use pop_api::primitives::v0::{self, Error as ApiError, *};
+
+			/// Error type for writing tests (see `error` module).
+			pub type Error = crate::error::Error<v0::Error, pop_runtime_testnet::RuntimeError, 3>;
+		}
 	}
+
+	define_runtime_utilities!(Runtime);
 }
 
 /// Deploy a contract with a given constructor, arguments, salt and an initial value. In
@@ -68,12 +103,12 @@ pub mod devnet {
 /// ```rs
 /// #[drink::test(sandbox = Pop)]
 /// fn test_constructor_works(mut session: Session) {
-/// 	let bundle = BundleProvider::local().unwrap();
+///    let bundle = BundleProvider::local().unwrap();
 ///
-/// 	// Deploy contract.
-/// 	//
-/// 	// `ContractError` is the error type used by the contract.
-/// 	assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
+///    // Deploy contract.
+///    //
+///    // `ContractError` is the error type used by the contract.
+///    assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
 /// }
 /// ```
 pub fn deploy<S, E>(
@@ -116,19 +151,19 @@ where
 /// ```rs
 /// #[drink::test(sandbox = Pop)]
 /// fn call_works(mut session: Session) {
-/// 	let bundle = BundleProvider::local().unwrap();
-/// 	assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
+///    let bundle = BundleProvider::local().unwrap();
+///    assert_ok!(deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value));
 ///
-/// 	// Call contract.
-/// 	//
-/// 	// `()` is the successful result type used by the contract.
-/// 	// `ContractError` is the error type used by the contract.
-/// 	call::<Pop, (), ContractError>(
-/// 		session,
-/// 		"transfer",
-/// 		input,
-/// 		init_value,
-/// 	)
+///    // Call contract.
+///    //
+///    // `()` is the successful result type used by the contract.
+///    // `ContractError` is the error type used by the contract.
+///    call::<Pop, (), ContractError>(
+///    	session,
+///    	"transfer",
+///    	input,
+///    	init_value,
+///    )
 /// }
 /// ```
 pub fn call<S, O, E>(
@@ -171,12 +206,12 @@ where
 /// use drink::last_contract_event;
 ///
 /// assert_eq!(
-/// 	last_contract_event::<Pop>(&session).unwrap(),
-/// 	ContractEvent {
-/// 		value: 42,
-/// 	}
-/// 	.encode()
-/// 	.as_slice()
+///    last_contract_event::<Pop>(&session).unwrap(),
+///    ContractEvent {
+///    	value: 42,
+///    }
+///    .encode()
+///    .as_slice()
 /// );
 /// ```
 pub fn last_contract_event<S>(session: &Session<S>) -> Option<Vec<u8>>
