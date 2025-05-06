@@ -21,7 +21,7 @@ impl<
 	pub fn new_ext(balances: Vec<(T::AccountId, T::Balance)>) -> TestExternalities {
 		let mut storage = frame_system::GenesisConfig::<T>::default().build_storage().unwrap();
 
-		pallet_balances::GenesisConfig::<T> { balances }
+		pallet_balances::GenesisConfig::<T> { balances, dev_accounts: None }
 			.assimilate_storage(&mut storage)
 			.unwrap();
 
@@ -205,6 +205,7 @@ mod construct_runtime {
         type Extra = ();
         type ForceOrigin = EnsureSigned<Self::AccountId>;
         type Freezer = ();
+        type Holder = ();
         type MetadataDepositBase = ConstU128<1>;
         type MetadataDepositPerByte = ConstU128<1>;
         type RemoveItemsLimit = ConstU32<5>;
@@ -218,6 +219,7 @@ mod construct_runtime {
         type RuntimeEvent = RuntimeEvent;
         type WeightInfo = ();
         type Balance = u128;
+        type DoneSlashHandler = ();
         type DustRemoval = ();
         type ExistentialDeposit = ConstU128<1>;
         type AccountStore = System;
@@ -280,6 +282,7 @@ mod construct_runtime {
         type AddressGenerator = $crate::pallet_contracts::DefaultAddressGenerator;
         type MaxCodeLen = ConstU32<{ 123 * 1024 }>;
         type MaxStorageKeyLen = ConstU32<128>;
+        type MaxTransientStorageSize = ConstU32<{ 1024 * 1024 }>;
         type UnsafeUnstableInterface = ConstBool<false>;
         type UploadOrigin = $crate::frame_system::EnsureSigned<Self::AccountId>;
         type InstantiateOrigin = $crate::frame_system::EnsureSigned<Self::AccountId>;
