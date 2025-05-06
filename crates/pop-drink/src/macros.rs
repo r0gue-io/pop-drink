@@ -59,10 +59,10 @@ use crate::last_contract_event;
 /// impl From<StatusCode> for CustomError {
 ///     /// Converts a `StatusCode` (returned by the api) to a `CustomError`.
 ///     fn from(value: StatusCode) -> Self {
-///     	match value {
-///     		...,
-///     		_ => CustomError::StatusCode(value.0),
-///     	}
+///         match value {
+///            ...,
+///             _ => CustomError::StatusCode(value.0),
+///         }
 ///     }
 /// }
 ///

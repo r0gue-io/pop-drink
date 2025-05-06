@@ -65,7 +65,7 @@ where
 		let encoded = error.encode();
 		if encoded[0] == MODULE_INDEX {
 			let (index, module_error) = (encoded[1], &encoded[2..]);
-			let data = vec![vec![index], module_error.to_vec()].concat();
+			let data = [vec![index], module_error.to_vec()].concat();
 			return Error::Module(decode(&data));
 		}
 		Error::Raw(error)

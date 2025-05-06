@@ -15,6 +15,7 @@ pub mod macros;
 #[cfg(test)]
 mod mock;
 
+#[cfg(any(feature = "devnet", feature = "testnet"))]
 macro_rules! define_runtime_utilities {
 	($runtime_type:ident) => {
 		/// Alias for the balance type.
@@ -33,6 +34,7 @@ macro_rules! define_runtime_utilities {
 
 /// Types and utilities for testing smart contracts interacting with Pop Network Devnet via the Pop
 /// API.
+#[cfg(feature = "devnet")]
 pub mod devnet {
 	pub use pop_runtime_devnet::Runtime;
 
@@ -59,6 +61,7 @@ pub mod devnet {
 
 /// Types and utilities for testing smart contracts interacting with Pop Network Testnet via the Pop
 /// API.
+#[cfg(feature = "testnet")]
 pub mod testnet {
 	pub use pop_runtime_testnet::Runtime;
 
@@ -159,10 +162,10 @@ where
 ///    // `()` is the successful result type used by the contract.
 ///    // `ContractError` is the error type used by the contract.
 ///    call::<Pop, (), ContractError>(
-///    	session,
-///    	"transfer",
-///    	input,
-///    	init_value,
+///     session,
+///     "transfer",
+///     input,
+///     init_value,
 ///    )
 /// }
 /// ```
@@ -208,7 +211,7 @@ where
 /// assert_eq!(
 ///    last_contract_event::<Pop>(&session).unwrap(),
 ///    ContractEvent {
-///    	value: 42,
+///     value: 42,
 ///    }
 ///    .encode()
 ///    .as_slice()
@@ -224,6 +227,7 @@ where
 	session.record().last_event_batch().contract_events().last().cloned()
 }
 
+#[cfg(any(feature = "devnet", feature = "testnet"))]
 fn account_id_from_slice(s: &[u8; 32]) -> pop_api::primitives::AccountId {
 	pop_api::primitives::AccountId::decode(&mut &s[..]).expect("Should be decoded to AccountId")
 }

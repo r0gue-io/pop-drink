@@ -7,8 +7,8 @@ edition = "2021"
 drink.workspace = true
 ink_sandbox.workspace = true
 pallet-contracts.workspace = true
-pop-runtime-devnet.workspace = true
-pop-runtime-testnet.workspace = true
+pop-runtime-devnet = { workspace = true, optional = true }
+pop-runtime-testnet = { workspace = true, optional = true }
 frame-system.workspace = true
 frame-support.workspace = true
 sp-io.workspace = true
@@ -20,3 +20,8 @@ scale-info = { workspace = true, features = ["derive"] }
 pallet-assets.workspace = true
 pallet-balances.workspace = true
 pallet-timestamp.workspace = true
+
+[features]
+default = []
+devnet = ["dep:pop-runtime-devnet"]
+testnet = ["dep:pop-runtime-testnet"]

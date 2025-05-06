@@ -54,7 +54,7 @@ sp-runtime-interface = { version = "29.0.1", features = ["std"] }
 # Local
 drink = { path = "crates/drink/drink" }
 ink_sandbox = { path = "crates/ink-sandbox" }
-pop-api = { git = "https://github.com/r0gue-io/pop-node.git", branch = "main" }
+pop-api = { git = "https://github.com/r0gue-io/pop-node.git", branch = "chungquantin/sync-pallet-nfts-stable2503" }
 pop-drink = { path = "crates/pop-drink" }
-pop-runtime-devnet = { git = "https://github.com/r0gue-io/pop-node.git", branch = "main" }
-pop-runtime-testnet = { git = "https://github.com/r0gue-io/pop-node.git", branch = "main" }
+pop-runtime-devnet = { git = "https://github.com/r0gue-io/pop-node.git", branch = "chungquantin/sync-pallet-nfts-stable2503" }
+pop-runtime-testnet = { git = "https://github.com/r0gue-io/pop-node.git", branch = "chungquantin/sync-pallet-nfts-stable2503" }

@@ -89,8 +89,8 @@ impl pallet_assets::Config<AssetsInstance> for Test {
 
 parameter_types! {
 	pub MySchedule: Schedule<Test> = {
-		let schedule = <Schedule<Test>>::default();
-		schedule
+
+		<Schedule<Test>>::default()
 	};
 }
 
