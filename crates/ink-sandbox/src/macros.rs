@@ -21,7 +21,7 @@ impl<
 	pub fn new_ext(balances: Vec<(T::AccountId, T::Balance)>) -> TestExternalities {
 		let mut storage = frame_system::GenesisConfig::<T>::default().build_storage().unwrap();
 
-		pallet_balances::GenesisConfig::<T> { balances, dev_accounts: None }
+		pallet_balances::GenesisConfig::<T> { balances, ..Default::default() }
 			.assimilate_storage(&mut storage)
 			.unwrap();
 

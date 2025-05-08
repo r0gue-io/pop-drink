@@ -22,6 +22,6 @@ pallet-balances.workspace = true
 pallet-timestamp.workspace = true
 
 [features]
-default = []
+default = ["testnet"]
 devnet = ["dep:pop-runtime-devnet"]
 testnet = ["dep:pop-runtime-testnet"]
