@@ -195,7 +195,7 @@ mod construct_runtime {
     }
 
     // Configure pallet assets
-    type AssetsInstance = pallet_assets::Instance1;
+    type AssetsInstance = $crate::pallet_assets::Instance1;
     impl $crate::pallet_assets::Config<AssetsInstance> for $runtime {
         type ApprovalDeposit = ConstU128<1>;
         type AssetAccountDeposit = ConstU128<10>;
@@ -313,7 +313,7 @@ mod construct_runtime {
     	type AccountId = AccountId32;
 
     	fn into_account(self) -> Self::AccountId {
-    		0
+    		AccountId32::from([0; 32])
     	}
     }
 
@@ -329,8 +329,8 @@ mod construct_runtime {
        	}
     }
 
-    type NftsInstance = pallet_nfts::Instance1;
-    impl pallet_nfts::Config<NftsInstance> for $runtime {
+    type NftsInstance = $crate::pallet_nfts::Instance1;
+    impl $crate::pallet_nfts::Config<NftsInstance> for $runtime {
     	type ApprovalsLimit = ConstU32<10>;
     	type AttributeDepositBase = ConstU128<1>;
     	type CollectionApprovalDeposit = ConstU128<1>;

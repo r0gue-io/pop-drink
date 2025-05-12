@@ -4,20 +4,20 @@ use frame_support::{
 		traits::{Dispatchable, StaticLookup},
 		DispatchError,
 	},
-	traits::nonfungibles_v2::Inspect,
+	traits::{nonfungibles_v2::Inspect, Incrementable},
 };
 use pallet_nfts::{DestroyWitness, Instance1, MintWitness};
 
 use crate::{AccountIdFor, RuntimeCall, Sandbox};
 
 type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
-type BalanceOf<T> = pallet_nfts::BalanceOf<T, Instance1>;
 type AccountBalanceOf<T> = pallet_nfts::AccountBalance<T, Instance1>;
 type CollectionIdOf<T> =
 	<NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::CollectionId;
 type ItemIdOf<T> = <NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::ItemId;
 type CollectionConfigFor<T> = pallet_nfts::CollectionConfigFor<T, Instance1>;
 type DepositBalanceOf<T> = pallet_nfts::DepositBalanceOf<T, Instance1>;
+type NextCollectionIdOf<T> = pallet_nfts::NextCollectionId<T, Instance1>;
 type NftsOf<T> = pallet_nfts::Pallet<T, Instance1>;
 
 /// Assets API for the sandbox.
@@ -66,15 +66,24 @@ where
 		dest: AccountIdLookupOf<T::Runtime>,
 	) -> Result<(), DispatchError>;
 
+	fn next_collection_id(&mut self) -> Option<CollectionIdOf<T::Runtime>>;
+
+	fn collection_owner(
+		&mut self,
+		collection: &CollectionIdOf<T::Runtime>,
+	) -> Option<AccountIdFor<T::Runtime>>;
+
 	fn balance_of(
 		&mut self,
-		collection: CollectionIdOf<T::Runtime>,
-		account: AccountIdFor<T::Runtime>,
+		collection: &CollectionIdOf<T::Runtime>,
+		account: &AccountIdFor<T::Runtime>,
 	) -> u32;
 
-	// fn owner() {}
-
-	// fn collection_owner() {}
+	fn owner(
+		&mut self,
+		collection: &CollectionIdOf<T::Runtime>,
+		item: &ItemIdOf<T::Runtime>,
+	) -> Option<AccountIdFor<T::Runtime>>;
 }
 
 impl<T> NftsAPI<T> for T
@@ -168,10 +177,28 @@ where
 		})
 	}
 
+	fn next_collection_id(&mut self) -> Option<CollectionIdOf<<T as Sandbox>::Runtime>> {
+		self.execute_with(|| {
+			NextCollectionIdOf::<T::Runtime>::get()
+				.or(CollectionIdOf::<T::Runtime>::initial_value())
+		})
+	}
+
+	fn collection_owner(
+		&mut self,
+		collection: &CollectionIdOf<<T as Sandbox>::Runtime>,
+	) -> Option<AccountIdFor<<T as Sandbox>::Runtime>> {
+		self.execute_with(|| {
+    		<pallet_nfts::Pallet<T::Runtime, Instance1> as Inspect<AccountIdFor<T::Runtime>>>::collection_owner(
+    			collection,
+    		)
+    	})
+	}
+
 	fn balance_of(
 		&mut self,
-		collection: CollectionIdOf<T::Runtime>,
-		account: AccountIdFor<T::Runtime>,
+		collection: &CollectionIdOf<T::Runtime>,
+		account: &AccountIdFor<T::Runtime>,
 	) -> u32 {
 		self.execute_with(|| {
 			AccountBalanceOf::<T::Runtime>::get(collection, account)
@@ -179,34 +206,51 @@ where
 				.unwrap_or_default()
 		})
 	}
+
+	fn owner(
+		&mut self,
+		collection: &CollectionIdOf<T::Runtime>,
+		item: &ItemIdOf<T::Runtime>,
+	) -> Option<AccountIdFor<T::Runtime>> {
+		self.execute_with(|| {
+			<pallet_nfts::Pallet<T::Runtime, Instance1> as Inspect<AccountIdFor<T::Runtime>>>::owner(
+				collection, item,
+			)
+		})
+	}
 }
 
 #[cfg(test)]
 mod test {
 	use pallet_contracts::test_utils::{ALICE, BOB};
-	use pallet_nfts::{CollectionConfig, MintSettings};
+	use pallet_nfts::{CollectionConfig, CollectionSettings, MintSettings};
 
 	use super::*;
 	use crate::{api::prelude::NftsAPI, DefaultSandbox};
 
 	#[test]
-	fn api_works() {
+	fn api_works() -> Result<(), DispatchError> {
 		let mut sandbox = DefaultSandbox::default();
 		let actor = DefaultSandbox::default_actor();
-		let collection = 1;
+		let collection = sandbox.next_collection_id().unwrap_or_default();
 		let item = 1;
+
 		let config = CollectionConfig {
-			settings: pallet_nfts::CollectionSettings::all_enabled(),
+			settings: CollectionSettings::all_enabled(),
 			mint_settings: MintSettings::default(),
 			max_supply: None,
 		};
+		sandbox.create(Some(actor.clone()), &ALICE.into(), config)?;
+		assert_eq!(sandbox.collection_owner(&collection), Some(actor.clone()));
 
-		sandbox.create(actor.into(), &ALICE.into(), config);
-		sandbox
-			.mint(actor.into(), collection, 1, BOB.into(), Some(MintWitness::default()))
-			.unwrap();
+		sandbox.mint(Some(actor.clone()), collection, item, actor.clone().into(), None)?;
+		assert_eq!(sandbox.balance_of(&collection, &actor), 1);
+		assert_eq!(sandbox.owner(&collection, &item), Some(actor.clone()));
 
-		// assert_eq!(sandbox.balance_of(&token, &actor), balance + 100);
-		// assert!(sandbox.asset_exists(&token));
+		sandbox.transfer(Some(actor.clone()), collection, item, BOB.into())?;
+		assert_eq!(sandbox.balance_of(&collection, &BOB), 1);
+		assert_eq!(sandbox.owner(&collection, &item), Some(BOB));
+
+		Ok(())
 	}
 }
