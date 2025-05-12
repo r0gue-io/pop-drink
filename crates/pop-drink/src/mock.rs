@@ -59,6 +59,7 @@ impl pallet_contracts::Config for Test {
 	type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
 	type MaxDelegateDependencies = MaxDelegateDependencies;
 	type MaxStorageKeyLen = ConstU32<128>;
+	type MaxTransientStorageSize = ConstU32<{ 1024 * 1024 }>;
 	type Migrations = ();
 	// crate::migration::codegen::BenchMigrations;
 	type Randomness = Test;
@@ -88,8 +89,8 @@ impl pallet_assets::Config<AssetsInstance> for Test {
 
 parameter_types! {
 	pub MySchedule: Schedule<Test> = {
-		let schedule = <Schedule<Test>>::default();
-		schedule
+
+		<Schedule<Test>>::default()
 	};
 }
 
