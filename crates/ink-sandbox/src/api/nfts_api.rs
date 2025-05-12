@@ -12,11 +12,11 @@ use crate::{AccountIdFor, RuntimeCall, Sandbox};
 
 type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
 type AccountBalanceOf<T> = pallet_nfts::AccountBalance<T, Instance1>;
+type CollectionConfigFor<T> = pallet_nfts::CollectionConfigFor<T, Instance1>;
 type CollectionIdOf<T> =
 	<NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::CollectionId;
-type ItemIdOf<T> = <NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::ItemId;
-type CollectionConfigFor<T> = pallet_nfts::CollectionConfigFor<T, Instance1>;
 type DepositBalanceOf<T> = pallet_nfts::DepositBalanceOf<T, Instance1>;
+type ItemIdOf<T> = <NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::ItemId;
 type NextCollectionIdOf<T> = pallet_nfts::NextCollectionId<T, Instance1>;
 type NftsOf<T> = pallet_nfts::Pallet<T, Instance1>;
 
@@ -26,6 +26,11 @@ where
 	T: Sandbox,
 	T::Runtime: pallet_nfts::Config<Instance1>,
 {
+	/// Creates an NFT collection.
+	///
+	/// # Arguments
+	/// * `admin` - The admin account of the collection.
+	/// * `config` - Settings and config to be set for the new collection.
 	fn create<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
@@ -33,6 +38,11 @@ where
 		config: CollectionConfigFor<T::Runtime>,
 	) -> Result<(), DispatchError>;
 
+	/// Destroy an NFT collection.
+	///
+	/// # Arguments
+	/// * `collection` - The collection to be destroyed.
+	/// * `witness` - Information on the items minted in the `collection`. This must be correct.
 	fn destroy<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
@@ -40,6 +50,17 @@ where
 		witness: DestroyWitness,
 	) -> DispatchResultWithPostInfo;
 
+	/// Mints an item to the specified recipient account.
+	///
+	/// # Arguments
+	/// * `collection` - The collection.
+	/// * `item` - The identifier for the new item.
+	/// * `mint_to` - The recipient account.
+	/// * `witness` - When the mint type is `HolderOf(collection_id)`, then the owned item_id from
+	///   that collection needs to be provided within the witness data object. If the mint price is
+	///   set, then it should be additionally confirmed in the `witness`.
+	///
+	/// Note: The deposit will be taken from the `origin` and not the `owner` of the `item`.
 	fn mint<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
@@ -49,6 +70,11 @@ where
 		witness_data: Option<MintWitness<ItemIdOf<T::Runtime>, DepositBalanceOf<T::Runtime>>>,
 	) -> Result<(), DispatchError>;
 
+	/// Destroys the specified item. Clearing the corresponding approvals.
+	///
+	/// # Arguments
+	/// * `collection` - The collection.
+	/// * `item` - The item to burn.
 	fn burn<Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
@@ -56,6 +82,15 @@ where
 		item: ItemIdOf<T::Runtime>,
 	) -> Result<(), DispatchError>;
 
+	/// Transfers an owned or approved item to the specified recipient.
+	///
+	/// Origin must be either the item's owner or an account approved by the owner to
+	/// transfer the item.
+	///
+	/// # Arguments
+	/// * `collection` - The collection.
+	/// * `item` - The item.
+	/// * `dest` - The recipient account.
 	fn transfer<
 		Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>,
 	>(
@@ -66,19 +101,34 @@ where
 		dest: AccountIdLookupOf<T::Runtime>,
 	) -> Result<(), DispatchError>;
 
+	/// Returns the next collection identifier, if any.
 	fn next_collection_id(&mut self) -> Option<CollectionIdOf<T::Runtime>>;
 
+	/// Returns the owner of a collection, if any.
+	///
+	/// # Arguments
+	/// * `collection` - The collection.
 	fn collection_owner(
 		&mut self,
 		collection: &CollectionIdOf<T::Runtime>,
 	) -> Option<AccountIdFor<T::Runtime>>;
 
+	/// Returns the number of items the owner has within a collection.
+	///
+	/// # Arguments
+	/// * `collection` - The collection.
+	/// * `account` - The account that owns items in the collection.
 	fn balance_of(
 		&mut self,
 		collection: &CollectionIdOf<T::Runtime>,
 		account: &AccountIdFor<T::Runtime>,
 	) -> u32;
 
+	/// Returns the owner of an item within a specified collection, if any.
+	///
+	/// # Arguments
+	/// * `collection` - The collection.
+	/// * `item` - The item.
 	fn owner(
 		&mut self,
 		collection: &CollectionIdOf<T::Runtime>,
