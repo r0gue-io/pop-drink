@@ -4482,7 +4482,7 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 [[package]]
 name = "pallet-api"
 version = "0.1.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "anyhow",
  "frame-benchmarking",
@@ -4492,7 +4492,7 @@ dependencies = [
  "log",
  "pallet-assets",
  "pallet-ismp",
- "pallet-nfts 34.1.0 (git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503)",
+ "pallet-nfts 34.1.0 (git+https://github.com/r0gue-io/pop-node.git)",
  "parity-scale-codec",
  "pop-chain-extension",
  "scale-info",
@@ -4911,6 +4911,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-migrations"
+version = "10.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "290a3db17ac6eb9bc965a37eb689b35403f47930b4097626b7b8d07f651caf33"
+dependencies = [
+ "docify",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "log",
+ "parity-scale-codec",
+ "polkadot-sdk-frame",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-mmr"
 version = "40.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4926,7 +4946,7 @@ dependencies = [
 [[package]]
 name = "pallet-motion"
 version = "4.0.0-dev"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -4988,7 +5008,7 @@ dependencies = [
 [[package]]
 name = "pallet-nfts"
 version = "34.1.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "enumflags2",
  "frame-benchmarking",
@@ -5944,7 +5964,7 @@ dependencies = [
 [[package]]
 name = "pop-api"
 version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "ink",
  "pop-primitives",
@@ -5954,7 +5974,7 @@ dependencies = [
 [[package]]
 name = "pop-chain-extension"
 version = "0.1.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -5989,7 +6009,7 @@ dependencies = [
 [[package]]
 name = "pop-primitives"
 version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -5998,7 +6018,7 @@ dependencies = [
 [[package]]
 name = "pop-runtime-common"
 version = "0.0.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "cumulus-pallet-aura-ext",
  "cumulus-pallet-parachain-system",
@@ -6014,6 +6034,7 @@ dependencies = [
  "pallet-collator-selection",
  "pallet-collective",
  "pallet-message-queue",
+ "pallet-migrations",
  "pallet-motion",
  "pallet-multisig",
  "pallet-nfts 34.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -6045,7 +6066,7 @@ dependencies = [
 [[package]]
 name = "pop-runtime-devnet"
 version = "0.1.0"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "anyhow",
  "cumulus-pallet-aura-ext",
@@ -6083,7 +6104,7 @@ dependencies = [
  "pallet-message-queue",
  "pallet-multisig",
  "pallet-nft-fractionalization",
- "pallet-nfts 34.1.0 (git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503)",
+ "pallet-nfts 34.1.0 (git+https://github.com/r0gue-io/pop-node.git)",
  "pallet-nfts-runtime-api",
  "pallet-preimage",
  "pallet-proxy",
@@ -6129,7 +6150,7 @@ dependencies = [
 [[package]]
 name = "pop-runtime-testnet"
 version = "0.5.2"
-source = "git+https://github.com/r0gue-io/pop-node.git?branch=chungquantin%2Fsync-pallet-nfts-stable2503#ff8529cfb3202dfb43dd01010d70fc24e0cc5e7d"
+source = "git+https://github.com/r0gue-io/pop-node.git#83091b02cd436d87ced6520e8710cce7ccc8f30a"
 dependencies = [
  "anyhow",
  "cumulus-pallet-aura-ext",
@@ -6166,6 +6187,7 @@ dependencies = [
  "pallet-ismp",
  "pallet-ismp-runtime-api",
  "pallet-message-queue",
+ "pallet-migrations",
  "pallet-motion",
  "pallet-multisig",
  "pallet-nft-fractionalization",
