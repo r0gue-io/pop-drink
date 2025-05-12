@@ -17,6 +17,7 @@ pop-api.workspace = true
 
 [dev-dependencies]
 scale-info = { workspace = true, features = ["derive"] }
+pallet-nfts.workspace = true
 pallet-assets.workspace = true
 pallet-balances.workspace = true
 pallet-timestamp.workspace = true

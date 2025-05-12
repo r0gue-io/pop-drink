@@ -159,14 +159,16 @@ mod construct_runtime {
         parameter_types,
         sp_runtime::{
             testing::H256,
-            traits::Convert,
-            AccountId32, Perbill,
+            traits::{ Convert, IdentifyAccount, Lazy, Verify },
+            AccountId32, Perbill
         },
         traits::{AsEnsureOriginWithArg, ConstBool, ConstU128, ConstU32, ConstU64, Currency, Randomness},
         weights::Weight,
     };
     use $crate::frame_system::EnsureSigned;
-    use $crate::pallet_assets::Instance1;
+    use $crate::pallet_nfts::PalletFeatures;
+    use scale::{Decode, DecodeWithMemTracking, Encode};
+    use scale_info::TypeInfo;
 
     // Define the runtime type as a collection of pallets
     construct_runtime!(
@@ -176,6 +178,7 @@ mod construct_runtime {
             Balances: $crate::pallet_balances,
             Timestamp: $crate::pallet_timestamp,
             Contracts: $crate::pallet_contracts,
+            Nfts: $crate::pallet_nfts::<Instance1>,
             $(
                 $pallet_name: $pallet,
             )*
@@ -192,7 +195,8 @@ mod construct_runtime {
     }
 
     // Configure pallet assets
-    impl $crate::pallet_assets::Config<Instance1> for $runtime {
+    type AssetsInstance = pallet_assets::Instance1;
+    impl $crate::pallet_assets::Config<AssetsInstance> for $runtime {
         type ApprovalDeposit = ConstU128<1>;
         type AssetAccountDeposit = ConstU128<10>;
         type AssetDeposit = ConstU128<1>;
@@ -298,6 +302,64 @@ mod construct_runtime {
         type ApiVersion = ();
     }
 
+    parameter_types! {
+    	pub storage Features: PalletFeatures = PalletFeatures::all_enabled();
+    }
+
+    #[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, DecodeWithMemTracking, TypeInfo)]
+    pub struct Noop;
+
+    impl IdentifyAccount for Noop {
+    	type AccountId = AccountId32;
+
+    	fn into_account(self) -> Self::AccountId {
+    		0
+    	}
+    }
+
+    impl Verify for Noop {
+    	type Signer = Noop;
+
+    	fn verify<L: Lazy<[u8]>>(
+    		&self,
+    		_msg: L,
+    		_signer: &<Self::Signer as IdentifyAccount>::AccountId,
+    	) -> bool {
+      		false
+       	}
+    }
+
+    type NftsInstance = pallet_nfts::Instance1;
+    impl pallet_nfts::Config<NftsInstance> for $runtime {
+    	type ApprovalsLimit = ConstU32<10>;
+    	type AttributeDepositBase = ConstU128<1>;
+    	type CollectionApprovalDeposit = ConstU128<1>;
+    	type CollectionBalanceDeposit = ConstU128<1>;
+    	type CollectionDeposit = ConstU128<2>;
+    	type CollectionId = u32;
+    	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId32>>;
+    	type Currency = Balances;
+    	type DepositPerByte = ConstU128<1>;
+    	type Features = Features;
+    	type ForceOrigin = frame_system::EnsureRoot<Self::AccountId>;
+    	type ItemAttributesApprovalsLimit = ConstU32<2>;
+    	type ItemDeposit = ConstU128<1>;
+    	type ItemId = u32;
+    	type KeyLimit = ConstU32<50>;
+    	type Locker = ();
+    	type MaxAttributesPerCall = ConstU32<2>;
+    	type MaxDeadlineDuration = ConstU32<10000>;
+    	type MaxTips = ConstU32<10>;
+    	type MetadataDepositBase = ConstU128<1>;
+    	type OffchainPublic = Noop;
+    	type OffchainSignature = Noop;
+    	type RuntimeEvent = RuntimeEvent;
+    	type StringLimit = ConstU32<50>;
+    	type ValueLimit = ConstU32<50>;
+    	type WeightInfo = ();
+        type BlockNumberProvider = frame_system::Pallet<$runtime>;
+    }
+
     /// Unit base for balances.
     pub const UNIT: u128 = 10_000_000_000;
     /// Default initial balance for the default account.
@@ -324,7 +386,7 @@ mod construct_runtime {
 
 // Export runtime type itself, pallets and useful types from the auxiliary module
 pub use construct_runtime::{
-    $sandbox, $runtime, Assets, Balances, Contracts, PalletInfo, RuntimeCall, RuntimeEvent, RuntimeHoldReason,
+    $sandbox, $runtime, Assets, Balances, Nfts, Contracts, PalletInfo, RuntimeCall, RuntimeEvent, RuntimeHoldReason,
     RuntimeOrigin, System, Timestamp,
 };
     };
