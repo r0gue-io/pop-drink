@@ -348,7 +348,7 @@ mod test {
 		assert_eq!(sandbox.owner(&collection, &item), Some(actor.clone()));
 		assert_eq!(sandbox.item(&collection, &item).map(|item| item.owner), Some(actor.clone()));
 
-		sandbox.transfer(Some(actor.clone()), collection, item, BOB.into())?;
+		sandbox.transfer(Some(actor), collection, item, BOB.into())?;
 		assert_eq!(sandbox.balance_of(&collection, &BOB), 1);
 		assert_eq!(sandbox.owner(&collection, &item), Some(BOB));
 
