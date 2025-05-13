@@ -148,6 +148,12 @@ where
 		account: &AccountIdFor<T::Runtime>,
 	) -> u32;
 
+	/// Returns the total supply of a collection.
+	///
+	/// # Arguments
+	/// * `collection` - The collection.
+	fn total_supply(&mut self, collection: CollectionIdOf<T::Runtime>) -> u128;
+
 	/// Returns the owner of an item within a specified collection, if any.
 	///
 	/// # Arguments
@@ -296,6 +302,12 @@ where
 		})
 	}
 
+	fn total_supply(&mut self, collection: CollectionIdOf<T::Runtime>) -> u128 {
+		self.execute_with(|| {
+			NftsOf::<T::Runtime>::collection_items(collection).unwrap_or_default() as u128
+		})
+	}
+
 	fn owner(
 		&mut self,
 		collection: &CollectionIdOf<T::Runtime>,
@@ -330,6 +342,7 @@ mod test {
 			max_supply: None,
 		};
 		sandbox.create(Some(actor.clone()), &ALICE.into(), config)?;
+		assert_eq!(sandbox.total_supply(collection), 0);
 		assert_eq!(sandbox.collection_owner(&collection), Some(actor.clone()));
 		assert_eq!(
 			sandbox.collection(&collection),
@@ -344,6 +357,7 @@ mod test {
 		);
 
 		sandbox.mint(Some(actor.clone()), collection, item, actor.clone().into(), None)?;
+		assert_eq!(sandbox.total_supply(collection), 1);
 		assert_eq!(sandbox.balance_of(&collection, &actor), 1);
 		assert_eq!(sandbox.owner(&collection, &item), Some(actor.clone()));
 		assert_eq!(sandbox.item(&collection, &item).map(|item| item.owner), Some(actor.clone()));
