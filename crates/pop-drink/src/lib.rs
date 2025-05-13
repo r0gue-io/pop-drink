@@ -192,7 +192,10 @@ where
 			.expect("Expected a return value")
 			.expect("Decoding failed")),
 		// Catch-all for unexpected results.
-		_ => panic!("Expected call to revert or return a value"),
+		Err(e) => {
+			println!("SessionError: {:?}", e);
+			panic!("Expected call to revert or return a value")
+		},
 	}
 }
 

@@ -4,7 +4,7 @@ use std::fmt::Debug;
 
 pub use drink::{
 	pallet_assets::Error as AssetsError, pallet_balances::Error as BalancesError,
-	pallet_contracts::Error as ContractsError,
+	pallet_contracts::Error as ContractsError, pallet_nfts::Error as NftsError,
 };
 use scale::{Decode, Encode};
 
