@@ -12,10 +12,14 @@ use crate::{AccountIdFor, RuntimeCall, Sandbox};
 
 type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
 type AccountBalanceOf<T> = pallet_nfts::AccountBalance<T, Instance1>;
+type Collection<T> = pallet_nfts::Collection<T, Instance1>;
 type CollectionConfigFor<T> = pallet_nfts::CollectionConfigFor<T, Instance1>;
+type CollectionDetailsFor<T> = pallet_nfts::CollectionDetailsFor<T, Instance1>;
 type CollectionIdOf<T> =
 	<NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::CollectionId;
 type DepositBalanceOf<T> = pallet_nfts::DepositBalanceOf<T, Instance1>;
+type Item<T> = pallet_nfts::Item<T, Instance1>;
+type ItemDetailsFor<T> = pallet_nfts::ItemDetailsFor<T, Instance1>;
 type ItemIdOf<T> = <NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::ItemId;
 type NextCollectionIdOf<T> = pallet_nfts::NextCollectionId<T, Instance1>;
 type NftsOf<T> = pallet_nfts::Pallet<T, Instance1>;
@@ -103,6 +107,26 @@ where
 
 	/// Returns the next collection identifier, if any.
 	fn next_collection_id(&mut self) -> Option<CollectionIdOf<T::Runtime>>;
+
+	/// Returns the collection, if any.
+	///
+	/// # Arguments
+	/// * `id` - The collection ID.
+	fn collection(
+		&mut self,
+		id: &CollectionIdOf<T::Runtime>,
+	) -> Option<CollectionDetailsFor<T::Runtime>>;
+
+	/// Returns the collection item, if any.
+	///
+	/// # Arguments
+	/// * `collection` - The collection.
+	/// * `id` - The item ID.
+	fn item(
+		&mut self,
+		collection: &CollectionIdOf<T::Runtime>,
+		id: &ItemIdOf<T::Runtime>,
+	) -> Option<ItemDetailsFor<T::Runtime>>;
 
 	/// Returns the owner of a collection, if any.
 	///
@@ -234,6 +258,21 @@ where
 		})
 	}
 
+	fn collection(
+		&mut self,
+		id: &CollectionIdOf<<T as Sandbox>::Runtime>,
+	) -> Option<CollectionDetailsFor<<T as Sandbox>::Runtime>> {
+		self.execute_with(|| Collection::<T::Runtime>::get(id))
+	}
+
+	fn item(
+		&mut self,
+		collection: &CollectionIdOf<<T as Sandbox>::Runtime>,
+		id: &ItemIdOf<<T as Sandbox>::Runtime>,
+	) -> Option<ItemDetailsFor<<T as Sandbox>::Runtime>> {
+		self.execute_with(|| Item::<T::Runtime>::get(collection, id))
+	}
+
 	fn collection_owner(
 		&mut self,
 		collection: &CollectionIdOf<<T as Sandbox>::Runtime>,
@@ -273,7 +312,7 @@ where
 #[cfg(test)]
 mod test {
 	use pallet_contracts::test_utils::{ALICE, BOB};
-	use pallet_nfts::{CollectionConfig, CollectionSettings, MintSettings};
+	use pallet_nfts::{CollectionConfig, CollectionDetails, CollectionSettings, MintSettings};
 
 	use super::*;
 	use crate::{api::prelude::NftsAPI, DefaultSandbox};
@@ -292,10 +331,22 @@ mod test {
 		};
 		sandbox.create(Some(actor.clone()), &ALICE.into(), config)?;
 		assert_eq!(sandbox.collection_owner(&collection), Some(actor.clone()));
+		assert_eq!(
+			sandbox.collection(&collection),
+			Some(CollectionDetails {
+				owner: actor.clone(),
+				item_metadatas: 0,
+				items: 0,
+				attributes: 0,
+				item_configs: 0,
+				owner_deposit: 2
+			})
+		);
 
 		sandbox.mint(Some(actor.clone()), collection, item, actor.clone().into(), None)?;
 		assert_eq!(sandbox.balance_of(&collection, &actor), 1);
 		assert_eq!(sandbox.owner(&collection, &item), Some(actor.clone()));
+		assert_eq!(sandbox.item(&collection, &item).map(|item| item.owner), Some(actor.clone()));
 
 		sandbox.transfer(Some(actor.clone()), collection, item, BOB.into())?;
 		assert_eq!(sandbox.balance_of(&collection, &BOB), 1);
