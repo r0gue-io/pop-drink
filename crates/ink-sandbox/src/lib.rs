@@ -5,7 +5,10 @@ pub mod macros;
 
 pub use frame_metadata::RuntimeMetadataPrefixed;
 pub use frame_support::weights::Weight;
-use frame_support::{sp_runtime::traits::Dispatchable, traits::fungible::Inspect};
+use frame_support::{
+	sp_runtime::traits::{Dispatchable, StaticLookup},
+	traits::fungible::Inspect,
+};
 use frame_system::{pallet_prelude::BlockNumberFor, EventRecord};
 pub use macros::{BlockBuilder, DefaultSandbox};
 use pallet_contracts::{ContractExecResult, ContractInstantiateResult};
@@ -23,15 +26,23 @@ pub use {
 	sp_runtime_interface::{self},
 };
 
-/// Alias for the balance type.
-pub type BalanceFor<R> =
-	<<R as pallet_contracts::Config>::Currency as Inspect<AccountIdFor<R>>>::Balance;
+/// Alias for the account ID lookup source.
+pub type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
 
 /// Alias for the account ID type.
 pub type AccountIdFor<R> = <R as frame_system::Config>::AccountId;
 
-/// Alias for the runtime call type.
-pub type RuntimeCall<R> = <R as frame_system::Config>::RuntimeCall;
+/// Alias for the balance type.
+pub type BalanceFor<R> =
+	<<R as pallet_contracts::Config>::Currency as Inspect<AccountIdFor<R>>>::Balance;
+
+/// Alias for the contract exec result.
+pub type ContractExecResultFor<Runtime> =
+	ContractExecResult<BalanceFor<Runtime>, EventRecordOf<Runtime>>;
+
+/// Alias for the contract instantiate result.
+pub type ContractInstantiateResultFor<Runtime> =
+	ContractInstantiateResult<AccountIdFor<Runtime>, BalanceFor<Runtime>, EventRecordOf<Runtime>>;
 
 /// Alias for the event record type.
 pub type EventRecordOf<Runtime> = EventRecord<
@@ -39,19 +50,14 @@ pub type EventRecordOf<Runtime> = EventRecord<
 	<Runtime as frame_system::Config>::Hash,
 >;
 
-/// Alias for the contract instantiate result.
-pub type ContractInstantiateResultFor<Runtime> =
-	ContractInstantiateResult<AccountIdFor<Runtime>, BalanceFor<Runtime>, EventRecordOf<Runtime>>;
-
-/// Alias for the contract exec result.
-pub type ContractExecResultFor<Runtime> =
-	ContractExecResult<BalanceFor<Runtime>, EventRecordOf<Runtime>>;
-
-/// Alias for the runtime of a sandbox.
-pub type RuntimeOf<S> = <S as Sandbox>::Runtime;
+/// Alias for the runtime call type.
+pub type RuntimeCall<R> = <R as frame_system::Config>::RuntimeCall;
 
 /// Alias for the runtime event of a sandbox.
 pub type RuntimeEventOf<S> = <RuntimeOf<S> as frame_system::Config>::RuntimeEvent;
+
+/// Alias for the runtime of a sandbox.
+pub type RuntimeOf<S> = <S as Sandbox>::Runtime;
 
 /// Sandbox defines the API of a sandboxed runtime.
 pub trait Sandbox {

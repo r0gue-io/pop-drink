@@ -1,34 +1,28 @@
 use frame_support::{
 	dispatch::DispatchResultWithPostInfo,
-	sp_runtime::{
-		traits::{Dispatchable, StaticLookup},
-		DispatchError,
-	},
+	sp_runtime::{traits::Dispatchable, DispatchError},
 	traits::{nonfungibles_v2::Inspect, Incrementable},
 };
-use pallet_nfts::{DestroyWitness, Instance1, MintWitness};
+use pallet_nfts::{
+	AccountBalance, Collection, CollectionConfigFor, CollectionDetailsFor, DepositBalanceOf,
+	DestroyWitness, Item, ItemDetailsFor, MintWitness, NextCollectionId,
+};
 
-use crate::{AccountIdFor, RuntimeCall, Sandbox};
+use crate::{AccountIdFor, AccountIdLookupOf, RuntimeCall, Sandbox};
 
-type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
-type AccountBalanceOf<T> = pallet_nfts::AccountBalance<T, Instance1>;
-type Collection<T> = pallet_nfts::Collection<T, Instance1>;
-type CollectionConfigFor<T> = pallet_nfts::CollectionConfigFor<T, Instance1>;
-type CollectionDetailsFor<T> = pallet_nfts::CollectionDetailsFor<T, Instance1>;
-type CollectionIdOf<T> =
-	<NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::CollectionId;
-type DepositBalanceOf<T> = pallet_nfts::DepositBalanceOf<T, Instance1>;
-type Item<T> = pallet_nfts::Item<T, Instance1>;
-type ItemDetailsFor<T> = pallet_nfts::ItemDetailsFor<T, Instance1>;
-type ItemIdOf<T> = <NftsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::ItemId;
-type NextCollectionIdOf<T> = pallet_nfts::NextCollectionId<T, Instance1>;
-type NftsOf<T> = pallet_nfts::Pallet<T, Instance1>;
+type CollectionIdOf<T, I = ()> =
+	<NftsOf<T, I> as Inspect<<T as frame_system::Config>::AccountId>>::CollectionId;
+type ItemIdOf<T, I = ()> =
+	<NftsOf<T, I> as Inspect<<T as frame_system::Config>::AccountId>>::ItemId;
+type NftsOf<T, I = ()> = pallet_nfts::Pallet<T, I>;
 
-/// Assets API for the sandbox.
-pub trait NftsAPI<T: Sandbox>
+type MintWitnessData<T, I = ()> = MintWitness<ItemIdOf<T, I>, DepositBalanceOf<T, I>>;
+
+/// Nfts API for the sandbox.
+pub trait NftsAPI<T: Sandbox, I: 'static = ()>
 where
 	T: Sandbox,
-	T::Runtime: pallet_nfts::Config<Instance1>,
+	T::Runtime: pallet_nfts::Config<I>,
 {
 	/// Creates an NFT collection.
 	///
@@ -39,7 +33,7 @@ where
 		&mut self,
 		origin: Origin,
 		admin: &AccountIdLookupOf<T::Runtime>,
-		config: CollectionConfigFor<T::Runtime>,
+		config: CollectionConfigFor<T::Runtime, I>,
 	) -> Result<(), DispatchError>;
 
 	/// Destroy an NFT collection.
@@ -50,7 +44,7 @@ where
 	fn destroy<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
-		collection: CollectionIdOf<T::Runtime>,
+		collection: CollectionIdOf<T::Runtime, I>,
 		witness: DestroyWitness,
 	) -> DispatchResultWithPostInfo;
 
@@ -60,18 +54,16 @@ where
 	/// * `collection` - The collection.
 	/// * `item` - The identifier for the new item.
 	/// * `mint_to` - The recipient account.
-	/// * `witness` - When the mint type is `HolderOf(collection_id)`, then the owned item_id from
-	///   that collection needs to be provided within the witness data object. If the mint price is
-	///   set, then it should be additionally confirmed in the `witness`.
+	/// * `witness_data`- Information on the items minted in the `collection`. This must be correct.
 	///
 	/// Note: The deposit will be taken from the `origin` and not the `owner` of the `item`.
 	fn mint<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
-		collection: CollectionIdOf<T::Runtime>,
-		item: ItemIdOf<T::Runtime>,
+		collection: CollectionIdOf<T::Runtime, I>,
+		item: ItemIdOf<T::Runtime, I>,
 		mint_to: AccountIdLookupOf<T::Runtime>,
-		witness_data: Option<MintWitness<ItemIdOf<T::Runtime>, DepositBalanceOf<T::Runtime>>>,
+		witness_data: Option<MintWitnessData<T::Runtime, I>>,
 	) -> Result<(), DispatchError>;
 
 	/// Destroys the specified item. Clearing the corresponding approvals.
@@ -82,8 +74,8 @@ where
 	fn burn<Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
-		collection: CollectionIdOf<T::Runtime>,
-		item: ItemIdOf<T::Runtime>,
+		collection: CollectionIdOf<T::Runtime, I>,
+		item: ItemIdOf<T::Runtime, I>,
 	) -> Result<(), DispatchError>;
 
 	/// Transfers an owned or approved item to the specified recipient.
@@ -100,22 +92,22 @@ where
 	>(
 		&mut self,
 		origin: Origin,
-		collection: CollectionIdOf<T::Runtime>,
-		item: ItemIdOf<T::Runtime>,
+		collection: CollectionIdOf<T::Runtime, I>,
+		item: ItemIdOf<T::Runtime, I>,
 		dest: AccountIdLookupOf<T::Runtime>,
 	) -> Result<(), DispatchError>;
 
 	/// Returns the next collection identifier, if any.
-	fn next_collection_id(&mut self) -> Option<CollectionIdOf<T::Runtime>>;
+	fn next_collection_id(&mut self) -> Option<CollectionIdOf<T::Runtime, I>>;
 
 	/// Returns the collection, if any.
 	///
 	/// # Arguments
-	/// * `id` - The collection ID.
+	/// * `id` - The collection.
 	fn collection(
 		&mut self,
-		id: &CollectionIdOf<T::Runtime>,
-	) -> Option<CollectionDetailsFor<T::Runtime>>;
+		id: &CollectionIdOf<T::Runtime, I>,
+	) -> Option<CollectionDetailsFor<T::Runtime, I>>;
 
 	/// Returns the collection item, if any.
 	///
@@ -124,9 +116,9 @@ where
 	/// * `id` - The item ID.
 	fn item(
 		&mut self,
-		collection: &CollectionIdOf<T::Runtime>,
-		id: &ItemIdOf<T::Runtime>,
-	) -> Option<ItemDetailsFor<T::Runtime>>;
+		collection: &CollectionIdOf<T::Runtime, I>,
+		id: &ItemIdOf<T::Runtime, I>,
+	) -> Option<ItemDetailsFor<T::Runtime, I>>;
 
 	/// Returns the owner of a collection, if any.
 	///
@@ -134,7 +126,7 @@ where
 	/// * `collection` - The collection.
 	fn collection_owner(
 		&mut self,
-		collection: &CollectionIdOf<T::Runtime>,
+		collection: &CollectionIdOf<T::Runtime, I>,
 	) -> Option<AccountIdFor<T::Runtime>>;
 
 	/// Returns the number of items the owner has within a collection.
@@ -144,7 +136,7 @@ where
 	/// * `account` - The account that owns items in the collection.
 	fn balance_of(
 		&mut self,
-		collection: &CollectionIdOf<T::Runtime>,
+		collection: &CollectionIdOf<T::Runtime, I>,
 		account: &AccountIdFor<T::Runtime>,
 	) -> u32;
 
@@ -152,7 +144,7 @@ where
 	///
 	/// # Arguments
 	/// * `collection` - The collection.
-	fn total_supply(&mut self, collection: CollectionIdOf<T::Runtime>) -> u128;
+	fn total_supply(&mut self, collection: CollectionIdOf<T::Runtime, I>) -> u32;
 
 	/// Returns the owner of an item within a specified collection, if any.
 	///
@@ -161,28 +153,25 @@ where
 	/// * `item` - The item.
 	fn owner(
 		&mut self,
-		collection: &CollectionIdOf<T::Runtime>,
-		item: &ItemIdOf<T::Runtime>,
+		collection: &CollectionIdOf<T::Runtime, I>,
+		item: &ItemIdOf<T::Runtime, I>,
 	) -> Option<AccountIdFor<T::Runtime>>;
 }
 
-impl<T> NftsAPI<T> for T
+impl<T, I> NftsAPI<T, I> for T
 where
 	T: Sandbox,
-	T::Runtime: pallet_nfts::Config<Instance1>,
+	T::Runtime: pallet_nfts::Config<I>,
+	I: 'static,
 {
 	fn create<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
 		admin: &AccountIdLookupOf<T::Runtime>,
-		config: CollectionConfigFor<T::Runtime>,
+		config: CollectionConfigFor<T::Runtime, I>,
 	) -> Result<(), DispatchError> {
 		self.execute_with(|| {
-			<pallet_nfts::Pallet<T::Runtime, Instance1>>::create(
-				origin.into(),
-				admin.clone(),
-				config,
-			)
+			<pallet_nfts::Pallet<T::Runtime, I>>::create(origin.into(), admin.clone(), config)
 		})
 	}
 
@@ -191,33 +180,24 @@ where
 	>(
 		&mut self,
 		origin: Origin,
-		collection: CollectionIdOf<<T as Sandbox>::Runtime>,
+		collection: CollectionIdOf<T::Runtime, I>,
 		witness: DestroyWitness,
 	) -> DispatchResultWithPostInfo {
 		self.execute_with(|| {
-			<pallet_nfts::Pallet<T::Runtime, Instance1>>::destroy(
-				origin.into(),
-				collection,
-				witness,
-			)
+			<pallet_nfts::Pallet<T::Runtime, I>>::destroy(origin.into(), collection, witness)
 		})
 	}
 
 	fn mint<Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
-		collection: CollectionIdOf<<T as Sandbox>::Runtime>,
-		item: ItemIdOf<<T as Sandbox>::Runtime>,
+		collection: CollectionIdOf<<T as Sandbox>::Runtime, I>,
+		item: ItemIdOf<<T as Sandbox>::Runtime, I>,
 		mint_to: AccountIdLookupOf<<T as Sandbox>::Runtime>,
-		witness_data: Option<
-			MintWitness<
-				ItemIdOf<<T as Sandbox>::Runtime>,
-				DepositBalanceOf<<T as Sandbox>::Runtime>,
-			>,
-		>,
+		witness_data: Option<MintWitnessData<T::Runtime, I>>,
 	) -> Result<(), DispatchError> {
 		self.execute_with(|| {
-			<pallet_nfts::Pallet<T::Runtime, Instance1>>::mint(
+			<pallet_nfts::Pallet<T::Runtime, I>>::mint(
 				origin.into(),
 				collection,
 				item,
@@ -230,11 +210,11 @@ where
 	fn burn<Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>>(
 		&mut self,
 		origin: Origin,
-		collection: CollectionIdOf<T::Runtime>,
-		item: ItemIdOf<T::Runtime>,
+		collection: CollectionIdOf<T::Runtime, I>,
+		item: ItemIdOf<T::Runtime, I>,
 	) -> Result<(), DispatchError> {
 		self.execute_with(|| {
-			<pallet_nfts::Pallet<T::Runtime, Instance1>>::burn(origin.into(), collection, item)
+			<pallet_nfts::Pallet<T::Runtime, I>>::burn(origin.into(), collection, item)
 		})
 	}
 
@@ -243,78 +223,73 @@ where
 	>(
 		&mut self,
 		origin: Origin,
-		collection: CollectionIdOf<<T as Sandbox>::Runtime>,
-		item: ItemIdOf<<T as Sandbox>::Runtime>,
+		collection: CollectionIdOf<<T as Sandbox>::Runtime, I>,
+		item: ItemIdOf<<T as Sandbox>::Runtime, I>,
 		dest: AccountIdLookupOf<<T as Sandbox>::Runtime>,
 	) -> Result<(), DispatchError> {
 		self.execute_with(|| {
-			<pallet_nfts::Pallet<T::Runtime, Instance1>>::transfer(
-				origin.into(),
-				collection,
-				item,
-				dest,
-			)
+			<pallet_nfts::Pallet<T::Runtime, I>>::transfer(origin.into(), collection, item, dest)
 		})
 	}
 
-	fn next_collection_id(&mut self) -> Option<CollectionIdOf<<T as Sandbox>::Runtime>> {
+	fn next_collection_id(&mut self) -> Option<CollectionIdOf<<T as Sandbox>::Runtime, I>> {
 		self.execute_with(|| {
-			NextCollectionIdOf::<T::Runtime>::get()
-				.or(CollectionIdOf::<T::Runtime>::initial_value())
+			NextCollectionId::<T::Runtime, I>::get()
+				.or(CollectionIdOf::<T::Runtime, I>::initial_value())
 		})
 	}
 
 	fn collection(
 		&mut self,
-		id: &CollectionIdOf<<T as Sandbox>::Runtime>,
-	) -> Option<CollectionDetailsFor<<T as Sandbox>::Runtime>> {
-		self.execute_with(|| Collection::<T::Runtime>::get(id))
+		id: &CollectionIdOf<<T as Sandbox>::Runtime, I>,
+	) -> Option<CollectionDetailsFor<<T as Sandbox>::Runtime, I>> {
+		self.execute_with(|| Collection::<T::Runtime, I>::get(id))
 	}
 
 	fn item(
 		&mut self,
-		collection: &CollectionIdOf<<T as Sandbox>::Runtime>,
-		id: &ItemIdOf<<T as Sandbox>::Runtime>,
-	) -> Option<ItemDetailsFor<<T as Sandbox>::Runtime>> {
-		self.execute_with(|| Item::<T::Runtime>::get(collection, id))
+		collection: &CollectionIdOf<<T as Sandbox>::Runtime, I>,
+		id: &ItemIdOf<<T as Sandbox>::Runtime, I>,
+	) -> Option<ItemDetailsFor<<T as Sandbox>::Runtime, I>> {
+		self.execute_with(|| Item::<T::Runtime, I>::get(collection, id))
 	}
 
 	fn collection_owner(
 		&mut self,
-		collection: &CollectionIdOf<<T as Sandbox>::Runtime>,
+		collection: &CollectionIdOf<<T as Sandbox>::Runtime, I>,
 	) -> Option<AccountIdFor<<T as Sandbox>::Runtime>> {
 		self.execute_with(|| {
-    		<pallet_nfts::Pallet<T::Runtime, Instance1> as Inspect<AccountIdFor<T::Runtime>>>::collection_owner(
+			<pallet_nfts::Pallet<T::Runtime, I> as Inspect<AccountIdFor<T::Runtime>>>::collection_owner(
     			collection,
     		)
-    	})
+		})
 	}
 
 	fn balance_of(
 		&mut self,
-		collection: &CollectionIdOf<T::Runtime>,
+		collection: &CollectionIdOf<T::Runtime, I>,
 		account: &AccountIdFor<T::Runtime>,
 	) -> u32 {
 		self.execute_with(|| {
-			AccountBalanceOf::<T::Runtime>::get(collection, account)
+			AccountBalance::<T::Runtime, I>::get(collection, account)
 				.map(|(balance, _)| balance)
 				.unwrap_or_default()
 		})
 	}
 
-	fn total_supply(&mut self, collection: CollectionIdOf<T::Runtime>) -> u128 {
+	fn total_supply(&mut self, collection: CollectionIdOf<T::Runtime, I>) -> u32 {
 		self.execute_with(|| {
-			NftsOf::<T::Runtime>::collection_items(collection).unwrap_or_default() as u128
+			NftsOf::<T::Runtime, I>::collection_items(collection).unwrap_or_default()
 		})
 	}
 
 	fn owner(
 		&mut self,
-		collection: &CollectionIdOf<T::Runtime>,
-		item: &ItemIdOf<T::Runtime>,
+		collection: &CollectionIdOf<T::Runtime, I>,
+		item: &ItemIdOf<T::Runtime, I>,
 	) -> Option<AccountIdFor<T::Runtime>> {
 		self.execute_with(|| {
-			<pallet_nfts::Pallet<T::Runtime, Instance1> as Inspect<AccountIdFor<T::Runtime>>>::owner(
+			<pallet_nfts::Pallet<T::Runtime, I> as Inspect<AccountIdFor<T::Runtime>>>::owner(
 				collection, item,
 			)
 		})
