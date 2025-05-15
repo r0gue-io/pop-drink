@@ -1,6 +1,7 @@
 use frame_support::{
 	derive_impl, parameter_types,
-	traits::{AsEnsureOriginWithArg, ConstU32},
+	sp_runtime::traits::{IdentifyAccount, Lazy, Verify},
+	traits::{AsEnsureOriginWithArg, ConstU32, ConstU64},
 };
 use frame_system::{pallet_prelude::BlockNumberFor, EnsureRoot, EnsureSigned};
 use pallet_contracts::{
@@ -10,7 +11,11 @@ use pallet_contracts::{
 	},
 	DefaultAddressGenerator, Frame, Schedule,
 };
+use pallet_nfts::PalletFeatures;
+use scale::{Decode, DecodeWithMemTracking, Encode};
+use scale_info::TypeInfo;
 
+type AccountId = u64;
 type HashOf<T> = <T as frame_system::Config>::Hash;
 
 frame_support::construct_runtime!(
@@ -18,8 +23,9 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		Assets: pallet_assets::<Instance1>,
 		Balances: pallet_balances,
-		Timestamp: pallet_timestamp,
 		Contracts: pallet_contracts,
+		Nfts: pallet_nfts::<Instance1>,
+		Timestamp: pallet_timestamp,
 	}
 );
 
@@ -85,6 +91,64 @@ impl pallet_assets::Config<AssetsInstance> for Test {
 	type ForceOrigin = EnsureRoot<u64>;
 	type Freezer = ();
 	type RuntimeEvent = RuntimeEvent;
+}
+
+type NftsInstance = pallet_nfts::Instance1;
+impl pallet_nfts::Config<NftsInstance> for Test {
+	type ApprovalsLimit = ConstU32<10>;
+	type AttributeDepositBase = ConstU64<1>;
+	type BlockNumberProvider = frame_system::Pallet<Test>;
+	type CollectionApprovalDeposit = ConstU64<1>;
+	type CollectionBalanceDeposit = ConstU64<1>;
+	type CollectionDeposit = ConstU64<2>;
+	type CollectionId = u32;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<u64>>;
+	type Currency = Balances;
+	type DepositPerByte = ConstU64<1>;
+	type Features = Features;
+	type ForceOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type ItemAttributesApprovalsLimit = ConstU32<2>;
+	type ItemDeposit = ConstU64<1>;
+	type ItemId = u32;
+	type KeyLimit = ConstU32<50>;
+	type Locker = ();
+	type MaxAttributesPerCall = ConstU32<2>;
+	type MaxDeadlineDuration = ConstU64<10000>;
+	type MaxTips = ConstU32<10>;
+	type MetadataDepositBase = ConstU64<1>;
+	type OffchainPublic = Noop;
+	type OffchainSignature = Noop;
+	type RuntimeEvent = RuntimeEvent;
+	type StringLimit = ConstU32<50>;
+	type ValueLimit = ConstU32<50>;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub storage Features: PalletFeatures = PalletFeatures::all_enabled();
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, DecodeWithMemTracking, TypeInfo)]
+pub struct Noop;
+
+impl IdentifyAccount for Noop {
+	type AccountId = AccountId;
+
+	fn into_account(self) -> Self::AccountId {
+		0
+	}
+}
+
+impl Verify for Noop {
+	type Signer = Noop;
+
+	fn verify<L: Lazy<[u8]>>(
+		&self,
+		_msg: L,
+		_signer: &<Self::Signer as IdentifyAccount>::AccountId,
+	) -> bool {
+		false
+	}
 }
 
 parameter_types! {

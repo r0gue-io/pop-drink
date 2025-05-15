@@ -13,8 +13,8 @@ pub use errors::Error;
 pub use frame_support;
 pub use ink_sandbox::{
 	self, api as sandbox_api, create_sandbox, impl_sandbox, pallet_assets, pallet_balances,
-	pallet_contracts, pallet_timestamp, sp_externalities, AccountId32, DispatchError, Sandbox,
-	Ss58Codec, Weight,
+	pallet_contracts, pallet_nfts, pallet_timestamp, sp_externalities, AccountId32, DispatchError,
+	Sandbox, Ss58Codec, Weight,
 };
 #[cfg(feature = "session")]
 pub use session::mock::{mock_message, ContractMock, MessageMock, MockedCallResult, Selector};
