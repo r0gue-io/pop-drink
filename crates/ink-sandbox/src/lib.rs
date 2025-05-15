@@ -50,6 +50,9 @@ pub type EventRecordOf<Runtime> = EventRecord<
 	<Runtime as frame_system::Config>::Hash,
 >;
 
+/// Alias for the runtime origin.
+type OriginFor<T> = <RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin;
+
 /// Alias for the runtime call type.
 pub type RuntimeCall<R> = <R as frame_system::Config>::RuntimeCall;
 

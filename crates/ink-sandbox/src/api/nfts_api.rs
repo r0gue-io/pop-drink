@@ -8,15 +8,14 @@ use pallet_nfts::{
 	DestroyWitness, Item, ItemDetailsFor, MintWitness, NextCollectionId,
 };
 
-use crate::{AccountIdFor, AccountIdLookupOf, RuntimeCall, Sandbox};
+use crate::{AccountIdFor, AccountIdLookupOf, OriginFor, RuntimeCall, Sandbox};
 
 type CollectionIdOf<T, I = ()> =
 	<NftsOf<T, I> as Inspect<<T as frame_system::Config>::AccountId>>::CollectionId;
 type ItemIdOf<T, I = ()> =
 	<NftsOf<T, I> as Inspect<<T as frame_system::Config>::AccountId>>::ItemId;
-type NftsOf<T, I = ()> = pallet_nfts::Pallet<T, I>;
-
 type MintWitnessData<T, I = ()> = MintWitness<ItemIdOf<T, I>, DepositBalanceOf<T, I>>;
+type NftsOf<T, I = ()> = pallet_nfts::Pallet<T, I>;
 
 /// Nfts API for the sandbox.
 pub trait NftsAPI<T: Sandbox, I: 'static = ()>
@@ -57,9 +56,9 @@ where
 	/// * `witness_data`- Information on the items minted in the `collection`. This must be correct.
 	///
 	/// Note: The deposit will be taken from the `origin` and not the `owner` of the `item`.
-	fn mint<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn mint(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		collection: CollectionIdOf<T::Runtime, I>,
 		item: ItemIdOf<T::Runtime, I>,
 		mint_to: AccountIdLookupOf<T::Runtime>,
@@ -71,9 +70,9 @@ where
 	/// # Arguments
 	/// * `collection` - The collection.
 	/// * `item` - The item to burn.
-	fn burn<Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn burn(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		collection: CollectionIdOf<T::Runtime, I>,
 		item: ItemIdOf<T::Runtime, I>,
 	) -> Result<(), DispatchError>;
@@ -87,11 +86,9 @@ where
 	/// * `collection` - The collection.
 	/// * `item` - The item.
 	/// * `dest` - The recipient account.
-	fn transfer<
-		Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>,
-	>(
+	fn transfer(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		collection: CollectionIdOf<T::Runtime, I>,
 		item: ItemIdOf<T::Runtime, I>,
 		dest: AccountIdLookupOf<T::Runtime>,
@@ -188,9 +185,9 @@ where
 		})
 	}
 
-	fn mint<Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn mint(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		collection: CollectionIdOf<<T as Sandbox>::Runtime, I>,
 		item: ItemIdOf<<T as Sandbox>::Runtime, I>,
 		mint_to: AccountIdLookupOf<<T as Sandbox>::Runtime>,
@@ -207,9 +204,9 @@ where
 		})
 	}
 
-	fn burn<Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn burn(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		collection: CollectionIdOf<T::Runtime, I>,
 		item: ItemIdOf<T::Runtime, I>,
 	) -> Result<(), DispatchError> {
@@ -218,11 +215,9 @@ where
 		})
 	}
 
-	fn transfer<
-		Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>,
-	>(
+	fn transfer(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		collection: CollectionIdOf<<T as Sandbox>::Runtime, I>,
 		item: ItemIdOf<<T as Sandbox>::Runtime, I>,
 		dest: AccountIdLookupOf<<T as Sandbox>::Runtime>,
@@ -300,23 +295,18 @@ where
 mod test {
 	use pallet_contracts::test_utils::{ALICE, BOB};
 	use pallet_nfts::{CollectionConfig, CollectionDetails, CollectionSettings, MintSettings};
+	use sp_core::crypto::AccountId32;
 
 	use super::*;
 	use crate::{api::prelude::NftsAPI, DefaultSandbox};
 
 	#[test]
-	fn api_works() -> Result<(), DispatchError> {
+	fn create_collection_works() -> Result<(), DispatchError> {
 		let mut sandbox = DefaultSandbox::default();
 		let actor = DefaultSandbox::default_actor();
 		let collection = sandbox.next_collection_id().unwrap_or_default();
-		let item = 1;
 
-		let config = CollectionConfig {
-			settings: CollectionSettings::all_enabled(),
-			mint_settings: MintSettings::default(),
-			max_supply: None,
-		};
-		sandbox.create(Some(actor.clone()), &ALICE.into(), config)?;
+		create_default_collection(&mut sandbox, actor.clone(), ALICE)?;
 		assert_eq!(sandbox.total_supply(collection), 0);
 		assert_eq!(sandbox.collection_owner(&collection), Some(actor.clone()));
 		assert_eq!(
@@ -330,7 +320,17 @@ mod test {
 				owner_deposit: 2
 			})
 		);
+		Ok(())
+	}
 
+	#[test]
+	fn mint_works() -> Result<(), DispatchError> {
+		let mut sandbox = DefaultSandbox::default();
+		let actor = DefaultSandbox::default_actor();
+		let collection = sandbox.next_collection_id().unwrap_or_default();
+		let item = 1;
+
+		create_default_collection(&mut sandbox, actor.clone(), ALICE)?;
 		sandbox.mint(Some(actor.clone()), collection, item, actor.clone().into(), None)?;
 		assert_eq!(sandbox.total_supply(collection), 1);
 		assert_eq!(sandbox.balance_of(&collection, &actor), 1);
@@ -340,7 +340,50 @@ mod test {
 		sandbox.transfer(Some(actor), collection, item, BOB.into())?;
 		assert_eq!(sandbox.balance_of(&collection, &BOB), 1);
 		assert_eq!(sandbox.owner(&collection, &item), Some(BOB));
+		Ok(())
+	}
 
+	#[test]
+	fn burn_works() -> Result<(), DispatchError> {
+		let mut sandbox = DefaultSandbox::default();
+		let actor = DefaultSandbox::default_actor();
+		let collection = sandbox.next_collection_id().unwrap_or_default();
+		let item = 1;
+
+		create_default_collection(&mut sandbox, actor.clone(), ALICE)?;
+		sandbox.mint(Some(actor.clone()), collection, item, actor.clone().into(), None)?;
+		sandbox.burn(Some(actor.clone()), collection, item)?;
+		assert_eq!(sandbox.balance_of(&collection, &BOB), 0);
+		assert_eq!(sandbox.owner(&collection, &item), None);
+		Ok(())
+	}
+
+	#[test]
+	fn transfer_works() -> Result<(), DispatchError> {
+		let mut sandbox = DefaultSandbox::default();
+		let actor = DefaultSandbox::default_actor();
+		let collection = sandbox.next_collection_id().unwrap_or_default();
+		let item = 1;
+
+		create_default_collection(&mut sandbox, actor.clone(), ALICE)?;
+		sandbox.mint(Some(actor.clone()), collection, item, actor.clone().into(), None)?;
+		sandbox.transfer(Some(actor), collection, item, BOB.into())?;
+		assert_eq!(sandbox.balance_of(&collection, &BOB), 1);
+		assert_eq!(sandbox.owner(&collection, &item), Some(BOB));
+		Ok(())
+	}
+
+	fn create_default_collection(
+		sandbox: &mut DefaultSandbox,
+		actor: AccountId32,
+		to: AccountId32,
+	) -> Result<(), DispatchError> {
+		let config = CollectionConfig {
+			settings: CollectionSettings::all_enabled(),
+			mint_settings: MintSettings::default(),
+			max_supply: None,
+		};
+		sandbox.create(Some(actor), &to.into(), config)?;
 		Ok(())
 	}
 }
