@@ -1,6 +1,6 @@
 use frame_support::{
 	dispatch::DispatchResultWithPostInfo,
-	sp_runtime::{traits::Dispatchable, DispatchError},
+	sp_runtime::DispatchError,
 	traits::{nonfungibles_v2::Inspect, Incrementable},
 };
 use pallet_nfts::{
@@ -8,7 +8,7 @@ use pallet_nfts::{
 	DestroyWitness, Item, ItemDetailsFor, MintWitness, NextCollectionId,
 };
 
-use crate::{AccountIdFor, AccountIdLookupOf, OriginFor, RuntimeCall, Sandbox};
+use crate::{AccountIdFor, AccountIdLookupOf, OriginFor, Sandbox};
 
 type CollectionIdOf<T, I = ()> =
 	<NftsOf<T, I> as Inspect<<T as frame_system::Config>::AccountId>>::CollectionId;
@@ -28,9 +28,9 @@ where
 	/// # Arguments
 	/// * `admin` - The admin account of the collection.
 	/// * `config` - Settings and config to be set for the new collection.
-	fn create<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn create(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		admin: &AccountIdLookupOf<T::Runtime>,
 		config: CollectionConfigFor<T::Runtime, I>,
 	) -> Result<(), DispatchError>;
@@ -40,9 +40,9 @@ where
 	/// # Arguments
 	/// * `collection` - The collection to be destroyed.
 	/// * `witness` - Information on the items minted in the `collection`. This must be correct.
-	fn destroy<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn destroy(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		collection: CollectionIdOf<T::Runtime, I>,
 		witness: DestroyWitness,
 	) -> DispatchResultWithPostInfo;
@@ -110,7 +110,7 @@ where
 	///
 	/// # Arguments
 	/// * `collection` - The collection.
-	/// * `id` - The item ID.
+	/// * `id` - The item.
 	fn item(
 		&mut self,
 		collection: &CollectionIdOf<T::Runtime, I>,
@@ -130,7 +130,7 @@ where
 	///
 	/// # Arguments
 	/// * `collection` - The collection.
-	/// * `account` - The account that owns items in the collection.
+	/// * `account` - The account that may own items in the collection.
 	fn balance_of(
 		&mut self,
 		collection: &CollectionIdOf<T::Runtime, I>,
@@ -161,9 +161,9 @@ where
 	T::Runtime: pallet_nfts::Config<I>,
 	I: 'static,
 {
-	fn create<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn create(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		admin: &AccountIdLookupOf<T::Runtime>,
 		config: CollectionConfigFor<T::Runtime, I>,
 	) -> Result<(), DispatchError> {
@@ -172,11 +172,9 @@ where
 		})
 	}
 
-	fn destroy<
-		Origin: Into<<RuntimeCall<<T as Sandbox>::Runtime> as Dispatchable>::RuntimeOrigin>,
-	>(
+	fn destroy(
 		&mut self,
-		origin: Origin,
+		origin: impl Into<OriginFor<T>>,
 		collection: CollectionIdOf<T::Runtime, I>,
 		witness: DestroyWitness,
 	) -> DispatchResultWithPostInfo {
