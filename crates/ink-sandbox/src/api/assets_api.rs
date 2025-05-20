@@ -1,23 +1,22 @@
 use frame_support::{
-	sp_runtime::{traits::Dispatchable, DispatchError},
+	sp_runtime::DispatchError,
 	traits::fungibles::{
 		approvals::{Inspect as _, Mutate as _},
 		Create, Destroy, Inspect, Mutate,
 	},
 };
-use pallet_assets::Instance1;
 
-use crate::{AccountIdFor, RuntimeCall, Sandbox};
+use crate::{AccountIdFor, OriginFor, Sandbox};
 
-type AssetIdOf<T> = <AssetsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::AssetId;
-type AssetsOf<T> = pallet_assets::Pallet<T, Instance1>;
-type BalanceOf<T> = <AssetsOf<T> as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
+type AssetIdOf<T, I> = <AssetsOf<T, I> as Inspect<<T as frame_system::Config>::AccountId>>::AssetId;
+type AssetsOf<T, I> = pallet_assets::Pallet<T, I>;
+type BalanceOf<T, I> = <AssetsOf<T, I> as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
 /// Assets API for the sandbox.
-pub trait AssetsAPI<T: Sandbox>
+pub trait AssetsAPI<T: Sandbox, I: 'static = ()>
 where
 	T: Sandbox,
-	T::Runtime: pallet_assets::Config<Instance1>,
+	T::Runtime: pallet_assets::Config<I>,
 {
 	/// Creates `value` amount of tokens and assigns them to `account`, increasing the total supply.
 	///
@@ -27,16 +26,16 @@ where
 	/// * `min_balance` - The asset amount one account need at least.
 	fn create(
 		&mut self,
-		id: &AssetIdOf<T::Runtime>,
+		id: &AssetIdOf<T::Runtime, I>,
 		owner: &AccountIdFor<T::Runtime>,
-		min_balance: BalanceOf<T::Runtime>,
+		min_balance: BalanceOf<T::Runtime, I>,
 	) -> Result<(), DispatchError>;
 
 	/// Start the destruction an existing fungible asset.
 	///
 	/// # Arguments
 	/// * `asset` - ID of the asset.
-	fn start_destroy(&mut self, asset: &AssetIdOf<T::Runtime>) -> Result<(), DispatchError>;
+	fn start_destroy(&mut self, asset: &AssetIdOf<T::Runtime, I>) -> Result<(), DispatchError>;
 
 	/// Start the destruction an existing fungible asset.
 	///
@@ -45,10 +44,10 @@ where
 	/// * `name` - Token name.
 	/// * `symbol` - Token symbol.
 	/// * `decimals` - Token decimals.
-	fn set_metadata<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn set_metadata(
 		&mut self,
-		origin: Origin,
-		asset: &AssetIdOf<T::Runtime>,
+		origin: impl Into<OriginFor<T>>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		name: Vec<u8>,
 		symbol: Vec<u8>,
 		decimals: u8,
@@ -64,10 +63,10 @@ where
 	/// * `value` - The number of tokens to approve.
 	fn approve(
 		&mut self,
-		asset: &AssetIdOf<T::Runtime>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		owner: &AccountIdFor<T::Runtime>,
 		delegate: &AccountIdFor<T::Runtime>,
-		amount: BalanceOf<T::Runtime>,
+		amount: BalanceOf<T::Runtime, I>,
 	) -> Result<(), DispatchError>;
 
 	/// Creates `value` amount of tokens and assigns them to `account`, increasing the total supply.
@@ -78,10 +77,10 @@ where
 	/// * `value` - The number of tokens to mint.
 	fn mint_into(
 		&mut self,
-		asset: &AssetIdOf<T::Runtime>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		account: &AccountIdFor<T::Runtime>,
-		value: BalanceOf<T::Runtime>,
-	) -> Result<BalanceOf<T::Runtime>, DispatchError>;
+		value: BalanceOf<T::Runtime, I>,
+	) -> Result<BalanceOf<T::Runtime, I>, DispatchError>;
 
 	/// Returns the account balance for the specified `owner`.
 	///
@@ -89,15 +88,15 @@ where
 	/// * `owner` - The account whose balance is being queried.
 	fn balance_of(
 		&mut self,
-		asset: &AssetIdOf<T::Runtime>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		owner: &AccountIdFor<T::Runtime>,
-	) -> BalanceOf<T::Runtime>;
+	) -> BalanceOf<T::Runtime, I>;
 
 	/// Returns the total supply of the `asset`.
 	///
 	/// # Arguments
 	/// * `asset` - ID of the asset.
-	fn total_supply(&mut self, asset: &AssetIdOf<T::Runtime>) -> BalanceOf<T::Runtime>;
+	fn total_supply(&mut self, asset: &AssetIdOf<T::Runtime, I>) -> BalanceOf<T::Runtime, I>;
 
 	/// Returns the allowance for a `spender` approved by an `owner`.
 	///
@@ -107,46 +106,54 @@ where
 	/// * `spender` - The account that is allowed to spend the tokens.
 	fn allowance(
 		&mut self,
-		asset: &AssetIdOf<T::Runtime>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		owner: &AccountIdFor<T::Runtime>,
 		delegate: &AccountIdFor<T::Runtime>,
-	) -> BalanceOf<T::Runtime>;
+	) -> BalanceOf<T::Runtime, I>;
 
 	/// Check if the asset exists.
 	///
 	/// # Arguments
 	/// * `asset` - ID of the asset.
-	fn asset_exists(&mut self, asset: &AssetIdOf<T::Runtime>) -> bool;
+	fn asset_exists(&mut self, asset: &AssetIdOf<T::Runtime, I>) -> bool;
 }
 
-impl<T> AssetsAPI<T> for T
+impl<T, I> AssetsAPI<T, I> for T
 where
 	T: Sandbox,
-	T::Runtime: pallet_assets::Config<Instance1>,
+	T::Runtime: pallet_assets::Config<I>,
+	I: 'static,
 {
 	fn create(
 		&mut self,
-		id: &AssetIdOf<T::Runtime>,
+		id: &AssetIdOf<T::Runtime, I>,
 		owner: &AccountIdFor<T::Runtime>,
-		min_balance: BalanceOf<T::Runtime>,
+		min_balance: BalanceOf<T::Runtime, I>,
 	) -> Result<(), DispatchError> {
-		self.execute_with(|| <pallet_assets::Pallet::<T::Runtime, Instance1> as Create<AccountIdFor<T::Runtime>>>::create(id.clone(), owner.clone(), true, min_balance))
+		self.execute_with(|| {
+			<pallet_assets::Pallet<T::Runtime, I> as Create<AccountIdFor<T::Runtime>>>::create(
+				id.clone(),
+				owner.clone(),
+				true,
+				min_balance,
+			)
+		})
 	}
 
-	fn start_destroy(&mut self, asset: &AssetIdOf<T::Runtime>) -> Result<(), DispatchError> {
-		self.execute_with(|| <pallet_assets::Pallet::<T::Runtime, Instance1> as Destroy<AccountIdFor<T::Runtime>>>::start_destroy(asset.clone(), None))
+	fn start_destroy(&mut self, asset: &AssetIdOf<T::Runtime, I>) -> Result<(), DispatchError> {
+		self.execute_with(|| <pallet_assets::Pallet::<T::Runtime, I> as Destroy<AccountIdFor<T::Runtime>>>::start_destroy(asset.clone(), None))
 	}
 
-	fn set_metadata<Origin: Into<<RuntimeCall<T::Runtime> as Dispatchable>::RuntimeOrigin>>(
+	fn set_metadata(
 		&mut self,
-		origin: Origin,
-		asset: &AssetIdOf<T::Runtime>,
+		origin: impl Into<OriginFor<T>>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		name: Vec<u8>,
 		symbol: Vec<u8>,
 		decimals: u8,
 	) -> Result<(), DispatchError> {
 		self.execute_with(|| {
-			pallet_assets::Pallet::<T::Runtime, Instance1>::set_metadata(
+			pallet_assets::Pallet::<T::Runtime, I>::set_metadata(
 				origin.into(),
 				asset.clone().into(),
 				name,
@@ -158,67 +165,52 @@ where
 
 	fn mint_into(
 		&mut self,
-		asset: &AssetIdOf<T::Runtime>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		account: &AccountIdFor<T::Runtime>,
-		value: BalanceOf<T::Runtime>,
-	) -> Result<BalanceOf<T::Runtime>, DispatchError> {
+		value: BalanceOf<T::Runtime, I>,
+	) -> Result<BalanceOf<T::Runtime, I>, DispatchError> {
 		self.execute_with(|| {
-			pallet_assets::Pallet::<T::Runtime, Instance1>::mint_into(asset.clone(), account, value)
+			pallet_assets::Pallet::<T::Runtime, I>::mint_into(asset.clone(), account, value)
 		})
 	}
 
 	fn approve(
 		&mut self,
-		asset: &AssetIdOf<T::Runtime>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		owner: &AccountIdFor<T::Runtime>,
 		delegate: &AccountIdFor<T::Runtime>,
-		amount: BalanceOf<T::Runtime>,
+		amount: BalanceOf<T::Runtime, I>,
 	) -> Result<(), DispatchError> {
 		self.execute_with(|| {
-			pallet_assets::Pallet::<T::Runtime, Instance1>::approve(
-				asset.clone(),
-				owner,
-				delegate,
-				amount,
-			)
+			pallet_assets::Pallet::<T::Runtime, I>::approve(asset.clone(), owner, delegate, amount)
 		})
 	}
 
 	fn balance_of(
 		&mut self,
-		asset: &AssetIdOf<T::Runtime>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		owner: &AccountIdFor<T::Runtime>,
-	) -> BalanceOf<T::Runtime> {
-		self.execute_with(|| {
-			pallet_assets::Pallet::<T::Runtime, Instance1>::balance(asset.clone(), owner)
-		})
+	) -> BalanceOf<T::Runtime, I> {
+		self.execute_with(|| pallet_assets::Pallet::<T::Runtime, I>::balance(asset.clone(), owner))
 	}
 
-	fn total_supply(&mut self, asset: &AssetIdOf<T::Runtime>) -> BalanceOf<T::Runtime> {
-		self.execute_with(|| {
-			pallet_assets::Pallet::<T::Runtime, Instance1>::total_supply(asset.clone())
-		})
+	fn total_supply(&mut self, asset: &AssetIdOf<T::Runtime, I>) -> BalanceOf<T::Runtime, I> {
+		self.execute_with(|| pallet_assets::Pallet::<T::Runtime, I>::total_supply(asset.clone()))
 	}
 
 	fn allowance(
 		&mut self,
-		asset: &AssetIdOf<T::Runtime>,
+		asset: &AssetIdOf<T::Runtime, I>,
 		owner: &AccountIdFor<T::Runtime>,
 		delegate: &AccountIdFor<T::Runtime>,
-	) -> BalanceOf<T::Runtime> {
+	) -> BalanceOf<T::Runtime, I> {
 		self.execute_with(|| {
-			pallet_assets::Pallet::<T::Runtime, Instance1>::allowance(
-				asset.clone(),
-				owner,
-				delegate,
-			)
+			pallet_assets::Pallet::<T::Runtime, I>::allowance(asset.clone(), owner, delegate)
 		})
 	}
 
-	fn asset_exists(&mut self, asset: &AssetIdOf<T::Runtime>) -> bool {
-		self.execute_with(|| {
-			pallet_assets::Pallet::<T::Runtime, Instance1>::asset_exists(asset.clone())
-		})
+	fn asset_exists(&mut self, asset: &AssetIdOf<T::Runtime, I>) -> bool {
+		self.execute_with(|| pallet_assets::Pallet::<T::Runtime, I>::asset_exists(asset.clone()))
 	}
 }
 
