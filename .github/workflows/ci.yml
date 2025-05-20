@@ -19,7 +19,7 @@ jobs:
           rustup toolchain install nightly --profile minimal --component rustfmt
           cargo +nightly fmt --all -- --check
 
-  check:
+  tests:
     needs: lint
     runs-on: ubuntu-latest
     env:
@@ -29,9 +29,9 @@ jobs:
 
       - uses: "./.github/actions/init"
 
-      - name: Check Build
+      - name: Run tests
         run: |
-          cargo check --release --locked
+          cargo test --release --locked
 
   clippy:
     needs: lint
