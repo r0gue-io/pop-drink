@@ -1,5 +1,6 @@
 //! A library for testing smart contracts on Pop Network.
 
+use drink::errors::MessageResult;
 pub use drink::*;
 pub use frame_support::{self, assert_ok};
 pub use ink_sandbox::api::assets_api::AssetsAPI;
@@ -181,7 +182,74 @@ where
 	O: Decode,
 	E: Decode,
 {
-	match session.call::<String, ()>(func_name, &input, endowment) {
+	let result = session.call::<String, ()>(func_name, &input, endowment);
+	handle_call_result(session, result)
+}
+
+/// Call a method of a contract and decode the returned data.
+///
+/// # Generic Parameters:
+/// - `S` - Sandbox environment.
+/// - `O` - `Ok()` type returned by the contract.
+/// - `E` - `Err()` type returned by the contract.
+///
+/// # Parameters:
+/// - `session` - The session for interacting with contracts.
+/// - `contract_address` - The address of the contract.
+/// - `func_name` - The name of the contract method.
+/// - `input` - The input arguments.
+/// - `init_value` - Balance to transfer during the call. Requires the contract method to be
+///   `payable`.
+///
+/// # Example:
+/// ```rs
+/// #[drink::test(sandbox = Pop)]
+/// fn call_with_address_works(mut session: Session) {
+///    let bundle = BundleProvider::local().unwrap();
+///    let contract_address = deploy<Pop, ContractError>(&mut session, bundle, "new", input, salt, init_value).unwrap();
+///
+///    // Call contract.
+///    //
+///    // `()` is the successful result type used by the contract.
+///    // `ContractError` is the error type used by the contract.
+///    call_with_address::<Pop, (), ContractError>(
+///     session,
+///     contract_address,
+///     "transfer",
+///     input,
+///     init_value,
+///    )
+/// }
+/// ```
+pub fn call_with_address<S, O, E>(
+	session: &mut Session<S>,
+	contract_address: AccountIdFor<S::Runtime>,
+	func_name: &str,
+	input: Vec<String>,
+	endowment: Option<BalanceFor<S::Runtime>>,
+) -> Result<O, E>
+where
+	S: Sandbox,
+	S::Runtime: pallet_contracts::Config,
+	O: Decode,
+	E: Decode,
+{
+	let result =
+		session.call_with_address::<String, ()>(contract_address, func_name, &input, endowment);
+	handle_call_result(session, result)
+}
+
+fn handle_call_result<S, O, E, V>(
+	session: &mut Session<S>,
+	result: Result<MessageResult<V>, SessionError>,
+) -> Result<O, E>
+where
+	S: Sandbox,
+	S::Runtime: pallet_contracts::Config,
+	O: Decode,
+	E: Decode,
+{
+	match result {
 		// If the call is reverted, decode the error into the specified error type.
 		Err(SessionError::CallReverted(error)) =>
 			Err(E::decode(&mut &error[2..]).expect("Decoding failed")),
