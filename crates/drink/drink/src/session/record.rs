@@ -111,6 +111,9 @@ impl<Config: pallet_contracts::Config> Record<Config> {
 	/// Panics if there were no contract calls.
 	pub fn last_call_return_decoded<T: Decode>(&self) -> Result<MessageResult<T>, SessionError> {
 		let mut raw = self.last_call_return();
+		if raw.is_empty() {
+			return Err(SessionError::EmptyReturnedValue);
+		}
 		MessageResult::decode(&mut raw).map_err(|err| {
 			SessionError::Decoding(format!(
 				"Failed to decode the result of calling a contract: {err:?}"
