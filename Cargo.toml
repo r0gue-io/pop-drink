@@ -39,18 +39,20 @@ thiserror = { version = "1.0.40" }
 wat = { version = "1.0.71" }
 
 # Substrate dependencies
-frame-metadata = { version = "20.0.0"}
-frame-support = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
-frame-system = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
-pallet-assets = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
-pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
-pallet-contracts = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
+frame-metadata = { version = "20.0.0" }
+frame-support = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
+frame-system = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
+pallet-assets = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
+pallet-balances = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
+pallet-contracts = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
 pallet-nfts = { git = "https://github.com/r0gue-io/pop-node.git" }
-pallet-timestamp = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
-sp-core = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
-sp-externalities = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
-sp-io = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4"}
-sp-runtime-interface = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4", features = ["std"] }
+pallet-timestamp = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
+sp-externalities = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4" }
+sp-runtime-interface = { git = "https://github.com/paritytech/polkadot-sdk", tag = "polkadot-stable2503-4", features = [
+  "std",
+] }
 
 # Local
 drink = { path = "crates/drink/drink" }
