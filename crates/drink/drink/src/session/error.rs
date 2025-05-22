@@ -7,7 +7,7 @@ use thiserror::Error;
 use crate::errors::MessageResult;
 
 /// Session specific errors.
-#[derive(Clone, Error, Debug)]
+#[derive(Clone, Error, Debug, Eq, PartialEq)]
 pub enum SessionError {
 	/// Encoding data failed.
 	#[error("Encoding call data failed: {0}")]
@@ -39,6 +39,9 @@ pub enum SessionError {
 	/// There is no registered transcoder to encode/decode messages for the called contract.
 	#[error("Missing transcoder")]
 	NoTranscoder,
+	/// Empty returned value.
+	#[error("Empty returned value")]
+	EmptyReturnedValue,
 }
 
 impl SessionError {

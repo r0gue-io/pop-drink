@@ -3,7 +3,7 @@
 use thiserror::Error;
 
 /// Main error type for the drink crate.
-#[derive(Clone, Error, Debug)]
+#[derive(Clone, Error, Debug, Eq, PartialEq)]
 pub enum Error {
 	/// Externalities could not be initialized.
 	#[error("Failed to build storage: {0}")]
